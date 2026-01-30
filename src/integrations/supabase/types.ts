@@ -14,7 +14,84 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+          organization: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          organization?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          organization?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      resources: {
+        Row: {
+          category: string
+          conditions: string | null
+          created_at: string
+          description: string
+          id: string
+          is_approved: boolean
+          is_available: boolean
+          location: string
+          provider_email: string
+          provider_name: string
+          provider_phone: string | null
+          submitted_by: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          conditions?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          is_approved?: boolean
+          is_available?: boolean
+          location: string
+          provider_email: string
+          provider_name: string
+          provider_phone?: string | null
+          submitted_by?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          conditions?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          is_approved?: boolean
+          is_available?: boolean
+          location?: string
+          provider_email?: string
+          provider_name?: string
+          provider_phone?: string | null
+          submitted_by?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
