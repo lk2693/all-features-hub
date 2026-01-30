@@ -1,16 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
-import { ArrowLeft, Send, Monitor, Home, Lightbulb, Music, Camera, Wrench, CheckCircle } from "lucide-react";
+import { ArrowLeft, Send, Monitor, Home, Lightbulb, Music, Camera, Wrench, CheckCircle, LogIn } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 import { cn } from "@/lib/utils";
 
@@ -77,6 +78,7 @@ type FormErrors = Partial<Record<keyof ResourceFormData, string>>;
 export default function RessourcenEintragen() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, isLoading: authLoading } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
@@ -93,12 +95,21 @@ export default function RessourcenEintragen() {
     privacy: false,
   });
 
+  // Pre-fill email if user is logged in
+  useEffect(() => {
+    if (user?.email && !formData.providerEmail) {
+      setFormData((prev) => ({ ...prev, providerEmail: user.email || "" }));
+    }
+    if (user?.user_metadata?.display_name && !formData.providerName) {
+      setFormData((prev) => ({ ...prev, providerName: user.user_metadata.display_name || "" }));
+    }
+  }, [user]);
+
   const updateField = <K extends keyof ResourceFormData>(
     field: K,
     value: ResourceFormData[K]
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
@@ -108,7 +119,16 @@ export default function RessourcenEintragen() {
     e.preventDefault();
     setErrors({});
 
-    // Validate form data
+    if (!user) {
+      toast({
+        title: "Anmeldung erforderlich",
+        description: "Bitte melde dich an, um eine Ressource einzutragen.",
+        variant: "destructive",
+      });
+      navigate("/auth");
+      return;
+    }
+
     const result = resourceSchema.safeParse(formData);
     
     if (!result.success) {
@@ -131,10 +151,31 @@ export default function RessourcenEintragen() {
 
     setIsSubmitting(true);
 
-    // Simulate API call - in production this would go to Supabase
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    const { error } = await supabase.from("resources").insert({
+      title: formData.title,
+      description: formData.description,
+      category: formData.category,
+      provider_name: formData.providerName,
+      provider_email: formData.providerEmail,
+      provider_phone: formData.providerPhone || null,
+      location: formData.location,
+      conditions: formData.conditions || null,
+      submitted_by: user.id,
+      is_approved: false,
+      is_available: true,
+    });
 
     setIsSubmitting(false);
+
+    if (error) {
+      toast({
+        title: "Fehler beim Speichern",
+        description: "Die Ressource konnte nicht gespeichert werden. Bitte versuche es später erneut.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSuccess(true);
 
     toast({
@@ -142,6 +183,56 @@ export default function RessourcenEintragen() {
       description: "Wir prüfen deinen Eintrag und schalten ihn bald frei.",
     });
   };
+
+  // Show loading state
+  if (authLoading) {
+    return (
+      <Layout>
+        <section className="py-16 lg:py-24 bg-gradient-section min-h-[60vh] flex items-center justify-center">
+          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+        </section>
+      </Layout>
+    );
+  }
+
+  // Show login prompt if not authenticated
+  if (!user) {
+    return (
+      <Layout>
+        <section className="py-16 lg:py-24 bg-gradient-section min-h-[60vh] flex items-center">
+          <div className="container">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="max-w-lg mx-auto text-center"
+            >
+              <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
+                <LogIn className="h-10 w-10 text-primary" />
+              </div>
+              <h1 className="font-display text-3xl font-bold text-foreground mb-4">
+                Anmeldung erforderlich
+              </h1>
+              <p className="text-muted-foreground mb-8">
+                Um eine Ressource einzutragen, musst du dich zuerst anmelden oder registrieren.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button className="bg-gradient-hero hover:opacity-90" asChild>
+                  <Link to="/auth">
+                    <LogIn className="mr-2 h-4 w-4" />
+                    Anmelden / Registrieren
+                  </Link>
+                </Button>
+                <Button variant="outline" onClick={() => navigate("/ressourcen")}>
+                  Zurück zum Ressourcenpool
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+      </Layout>
+    );
+  }
 
   if (isSuccess) {
     return (
@@ -174,8 +265,8 @@ export default function RessourcenEintragen() {
                     title: "",
                     description: "",
                     category: "",
-                    providerName: "",
-                    providerEmail: "",
+                    providerName: user?.user_metadata?.display_name || "",
+                    providerEmail: user?.email || "",
                     providerPhone: "",
                     location: "",
                     conditions: "",
