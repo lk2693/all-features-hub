@@ -9,6 +9,7 @@ import { CMSEditor } from "@/components/admin/CMSEditor";
 import { ResourcesManager } from "@/components/admin/ResourcesManager";
 import { BestPracticesManager } from "@/components/admin/BestPracticesManager";
 import { EventsManager } from "@/components/admin/EventsManager";
+import { StatisticsManager } from "@/components/admin/StatisticsManager";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, ShieldAlert } from "lucide-react";
 
@@ -17,7 +18,7 @@ export default function Admin() {
   const { user, isLoading: authLoading } = useAuth();
   const { isAdmin, isLoading: adminLoading } = useIsAdmin();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState("resources");
+  const [activeTab, setActiveTab] = useState("statistics");
 
   // Redirect if not admin
   useEffect(() => {
@@ -72,6 +73,9 @@ export default function Admin() {
         </div>
 
         <AdminTabs activeTab={activeTab} onTabChange={setActiveTab}>
+          <TabsContent value="statistics">
+            <StatisticsManager />
+          </TabsContent>
           <TabsContent value="resources">
             <ResourcesManager />
           </TabsContent>
