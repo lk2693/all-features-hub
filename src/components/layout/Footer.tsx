@@ -1,8 +1,7 @@
 import { Link } from "react-router-dom";
 import { Instagram, Youtube, Mail, MapPin } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useCookieConsent } from "@/contexts/CookieConsentContext";
+import { NewsletterSignup } from "@/components/NewsletterSignup";
 
 const footerLinks = {
   kulturrat: [
@@ -53,16 +52,7 @@ export default function Footer() {
                 Bleib auf dem Laufenden über Kulturpolitik, Förderungen und Veranstaltungen.
               </p>
             </div>
-            <form className="flex w-full max-w-md gap-3">
-              <Input
-                type="email"
-                placeholder="Deine E-Mail-Adresse"
-                className="bg-tertiary-foreground/10 border-tertiary-foreground/20 placeholder:text-tertiary-foreground/50"
-              />
-              <Button className="bg-gradient-hero hover:opacity-90 shrink-0">
-                Anmelden
-              </Button>
-            </form>
+            <NewsletterSignup className="w-full max-w-md" />
           </div>
         </div>
       </div>
