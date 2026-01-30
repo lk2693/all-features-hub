@@ -21,6 +21,7 @@ import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
 import NewsDetail from "./pages/NewsDetail";
 import Presse from "./pages/Presse";
+import Barrierefreiheit from "./pages/Barrierefreiheit";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -49,6 +50,7 @@ const App = () => (
               <Route path="/impressum" element={<Impressum />} />
               <Route path="/datenschutz" element={<Datenschutz />} />
               <Route path="/presse" element={<Presse />} />
+              <Route path="/barrierefreiheit" element={<Barrierefreiheit />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
