@@ -8,6 +8,7 @@ import UeberUns from "./pages/UeberUns";
 import News from "./pages/News";
 import Kalender from "./pages/Kalender";
 import Ressourcen from "./pages/Ressourcen";
+import RessourcenEintragen from "./pages/RessourcenEintragen";
 import Foerderung from "./pages/Foerderung";
 import Mitmachen from "./pages/Mitmachen";
 import Kontakt from "./pages/Kontakt";
@@ -29,6 +30,7 @@ const App = () => (
           <Route path="/news" element={<News />} />
           <Route path="/kalender" element={<Kalender />} />
           <Route path="/ressourcen" element={<Ressourcen />} />
+          <Route path="/ressourcen/eintragen" element={<RessourcenEintragen />} />
           <Route path="/foerderung" element={<Foerderung />} />
           <Route path="/mitmachen" element={<Mitmachen />} />
           <Route path="/kontakt" element={<Kontakt />} />
