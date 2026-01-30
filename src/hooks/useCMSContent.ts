@@ -5,6 +5,7 @@ interface CMSContent {
   title: string | null;
   subtitle: string | null;
   content: string | null;
+  image_url: string | null;
   cta_text: string | null;
   cta_link: string | null;
 }
@@ -14,6 +15,7 @@ const defaultContent: Record<string, CMSContent> = {
     title: "Gemeinsam für Kultur in Braunschweig",
     subtitle: "Der Kulturrat Braunschweig vernetzt Kulturschaffende, fördert den Austausch und stärkt die kulturelle Vielfalt unserer Stadt.",
     content: null,
+    image_url: null,
     cta_text: "Mehr erfahren",
     cta_link: "/ueber-uns",
   },
@@ -21,6 +23,7 @@ const defaultContent: Record<string, CMSContent> = {
     title: "Über den Kulturrat",
     subtitle: "Der Kulturrat Braunschweig ist die Interessenvertretung der Kulturschaffenden in Braunschweig. Wir vernetzen, beraten und setzen uns für die Belange der lokalen Kulturszene ein.",
     content: null,
+    image_url: null,
     cta_text: null,
     cta_link: null,
   },
@@ -28,6 +31,7 @@ const defaultContent: Record<string, CMSContent> = {
     title: "Unsere Mission",
     subtitle: null,
     content: "Wir stärken die kulturelle Vielfalt in Braunschweig, indem wir Kulturschaffende vernetzen, ihre Interessen vertreten und Ressourcen bündeln. Als unabhängige Stimme der Kulturszene setzen wir uns bei Politik und Verwaltung für bessere Rahmenbedingungen für Kunst und Kultur ein.",
+    image_url: null,
     cta_text: null,
     cta_link: null,
   },
@@ -35,6 +39,7 @@ const defaultContent: Record<string, CMSContent> = {
     title: "Veranstaltungskalender",
     subtitle: "Alle wichtigen Termine: Sitzungen, Workshops, Netzwerktreffen und Förderfristen auf einen Blick.",
     content: null,
+    image_url: null,
     cta_text: null,
     cta_link: null,
   },
@@ -42,6 +47,7 @@ const defaultContent: Record<string, CMSContent> = {
     title: "Förderinfos",
     subtitle: "Förderprogramme, Stipendien und Ausschreibungen für Kulturschaffende – übersichtlich aufbereitet mit Fristen und Tipps.",
     content: null,
+    image_url: null,
     cta_text: null,
     cta_link: null,
   },
@@ -49,6 +55,7 @@ const defaultContent: Record<string, CMSContent> = {
     title: "Tipp",
     subtitle: "Brauchst du Hilfe beim Schreiben von Förderanträgen? Wir bieten kostenlose Beratung an!",
     content: null,
+    image_url: null,
     cta_text: "Kontaktiere uns",
     cta_link: "/kontakt",
   },
@@ -59,6 +66,7 @@ export function useCMSContent(blockKey: string) {
     title: null,
     subtitle: null,
     content: null,
+    image_url: null,
     cta_text: null,
     cta_link: null,
   });
@@ -69,7 +77,7 @@ export function useCMSContent(blockKey: string) {
       try {
         const { data, error } = await supabase
           .from("cms_content")
-          .select("title, subtitle, content, cta_text, cta_link")
+          .select("title, subtitle, content, image_url, cta_text, cta_link")
           .eq("block_key", blockKey)
           .maybeSingle();
 
@@ -80,6 +88,7 @@ export function useCMSContent(blockKey: string) {
             title: data.title || defaultContent[blockKey]?.title || null,
             subtitle: data.subtitle || defaultContent[blockKey]?.subtitle || null,
             content: data.content || defaultContent[blockKey]?.content || null,
+            image_url: data.image_url || defaultContent[blockKey]?.image_url || null,
             cta_text: data.cta_text || defaultContent[blockKey]?.cta_text || null,
             cta_link: data.cta_link || defaultContent[blockKey]?.cta_link || null,
           });

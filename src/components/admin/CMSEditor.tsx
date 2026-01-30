@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Save, RotateCcw, Home, Users, Calendar, Euro } from "lucide-react";
+import { Loader2, Save, RotateCcw, Home, Users, Calendar, Euro, Upload, X, Image } from "lucide-react";
 
 interface CMSContent {
   id: string;
@@ -25,6 +25,7 @@ interface BlockFormData {
   title: string;
   subtitle: string;
   content: string;
+  image_url: string;
   cta_text: string;
   cta_link: string;
 }
@@ -35,7 +36,7 @@ const pageBlocks = {
       key: "hero", 
       label: "Hero-Bereich", 
       description: "Der erste Bereich, den Besucher auf der Startseite sehen",
-      fields: ["title", "subtitle", "cta_text", "cta_link"]
+      fields: ["title", "subtitle", "image_url", "cta_text", "cta_link"]
     },
   ],
   ueberuns: [
@@ -43,7 +44,7 @@ const pageBlocks = {
       key: "ueberuns_hero", 
       label: "Hero-Bereich", 
       description: "Einführung zur Über-uns-Seite",
-      fields: ["title", "subtitle"]
+      fields: ["title", "subtitle", "image_url"]
     },
     { 
       key: "ueberuns_mission", 
@@ -57,7 +58,7 @@ const pageBlocks = {
       key: "kalender_hero", 
       label: "Hero-Bereich", 
       description: "Einführung zum Veranstaltungskalender",
-      fields: ["title", "subtitle"]
+      fields: ["title", "subtitle", "image_url"]
     },
   ],
   foerderung: [
@@ -65,7 +66,7 @@ const pageBlocks = {
       key: "foerderung_hero", 
       label: "Hero-Bereich", 
       description: "Einführung zur Förderinfos-Seite",
-      fields: ["title", "subtitle"]
+      fields: ["title", "subtitle", "image_url"]
     },
     { 
       key: "foerderung_tipp", 
@@ -81,6 +82,7 @@ const defaultData: Record<string, BlockFormData> = {
     title: "Gemeinsam für Kultur in Braunschweig",
     subtitle: "Der Kulturrat Braunschweig vernetzt Kulturschaffende, fördert den Austausch und stärkt die kulturelle Vielfalt unserer Stadt.",
     content: "",
+    image_url: "",
     cta_text: "Mehr erfahren",
     cta_link: "/ueber-uns",
   },
@@ -88,6 +90,7 @@ const defaultData: Record<string, BlockFormData> = {
     title: "Über den Kulturrat",
     subtitle: "Der Kulturrat Braunschweig ist die Interessenvertretung der Kulturschaffenden in Braunschweig. Wir vernetzen, beraten und setzen uns für die Belange der lokalen Kulturszene ein.",
     content: "",
+    image_url: "",
     cta_text: "",
     cta_link: "",
   },
@@ -95,6 +98,7 @@ const defaultData: Record<string, BlockFormData> = {
     title: "Unsere Mission",
     subtitle: "",
     content: "Wir stärken die kulturelle Vielfalt in Braunschweig, indem wir Kulturschaffende vernetzen, ihre Interessen vertreten und Ressourcen bündeln. Als unabhängige Stimme der Kulturszene setzen wir uns bei Politik und Verwaltung für bessere Rahmenbedingungen für Kunst und Kultur ein.",
+    image_url: "",
     cta_text: "",
     cta_link: "",
   },
@@ -102,6 +106,7 @@ const defaultData: Record<string, BlockFormData> = {
     title: "Veranstaltungskalender",
     subtitle: "Alle wichtigen Termine: Sitzungen, Workshops, Netzwerktreffen und Förderfristen auf einen Blick.",
     content: "",
+    image_url: "",
     cta_text: "",
     cta_link: "",
   },
@@ -109,6 +114,7 @@ const defaultData: Record<string, BlockFormData> = {
     title: "Förderinfos",
     subtitle: "Förderprogramme, Stipendien und Ausschreibungen für Kulturschaffende – übersichtlich aufbereitet mit Fristen und Tipps.",
     content: "",
+    image_url: "",
     cta_text: "",
     cta_link: "",
   },
@@ -116,6 +122,7 @@ const defaultData: Record<string, BlockFormData> = {
     title: "Tipp",
     subtitle: "Brauchst du Hilfe beim Schreiben von Förderanträgen? Wir bieten kostenlose Beratung an!",
     content: "",
+    image_url: "",
     cta_text: "Kontaktiere uns",
     cta_link: "/kontakt",
   },
@@ -131,6 +138,8 @@ export function CMSEditor() {
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [activeTab, setActiveTab] = useState("home");
+  const [uploadingFor, setUploadingFor] = useState<string | null>(null);
+  const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   useEffect(() => {
     fetchCMSContent();
@@ -160,6 +169,7 @@ export function CMSEditor() {
             title: item.title || defaultData[item.block_key]?.title || "",
             subtitle: item.subtitle || defaultData[item.block_key]?.subtitle || "",
             content: item.content || defaultData[item.block_key]?.content || "",
+            image_url: item.image_url || defaultData[item.block_key]?.image_url || "",
             cta_text: item.cta_text || defaultData[item.block_key]?.cta_text || "",
             cta_link: item.cta_link || defaultData[item.block_key]?.cta_link || "",
           };
@@ -188,6 +198,72 @@ export function CMSEditor() {
     setHasChanges(true);
   }
 
+  async function handleImageUpload(blockKey: string, file: File) {
+    if (!file) return;
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Fehler",
+        description: "Bitte wähle eine Bilddatei aus.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "Fehler",
+        description: "Das Bild darf maximal 5MB groß sein.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploadingFor(blockKey);
+    
+    try {
+      // Generate unique filename
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${blockKey}-${Date.now()}.${fileExt}`;
+      const filePath = `heroes/${fileName}`;
+
+      // Upload to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('cms-images')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('cms-images')
+        .getPublicUrl(filePath);
+
+      // Update form data
+      handleInputChange(blockKey, 'image_url', publicUrl);
+
+      toast({
+        title: "Hochgeladen",
+        description: "Das Bild wurde erfolgreich hochgeladen.",
+      });
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      toast({
+        title: "Fehler",
+        description: "Bild konnte nicht hochgeladen werden.",
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingFor(null);
+    }
+  }
+
+  function handleRemoveImage(blockKey: string) {
+    handleInputChange(blockKey, 'image_url', '');
+  }
+
   function handleReset() {
     const formDataMap: Record<string, BlockFormData> = {};
     
@@ -197,6 +273,7 @@ export function CMSEditor() {
           title: cmsContent[key].title || defaultData[key]?.title || "",
           subtitle: cmsContent[key].subtitle || defaultData[key]?.subtitle || "",
           content: cmsContent[key].content || defaultData[key]?.content || "",
+          image_url: cmsContent[key].image_url || defaultData[key]?.image_url || "",
           cta_text: cmsContent[key].cta_text || defaultData[key]?.cta_text || "",
           cta_link: cmsContent[key].cta_link || defaultData[key]?.cta_link || "",
         };
@@ -221,6 +298,7 @@ export function CMSEditor() {
           title: data.title,
           subtitle: data.subtitle,
           content: data.content,
+          image_url: data.image_url || null,
           cta_text: data.cta_text,
           cta_link: data.cta_link,
           updated_by: user?.id,
@@ -260,6 +338,79 @@ export function CMSEditor() {
     } finally {
       setIsSaving(false);
     }
+  }
+
+  function renderImageUpload(blockKey: string) {
+    const data = formData[blockKey];
+    const isUploading = uploadingFor === blockKey;
+
+    return (
+      <div className="space-y-2">
+        <Label>Hero-Bild</Label>
+        
+        {data?.image_url ? (
+          <div className="relative rounded-lg overflow-hidden border border-border">
+            <img 
+              src={data.image_url} 
+              alt="Hero Preview" 
+              className="w-full h-48 object-cover"
+            />
+            <Button
+              variant="destructive"
+              size="icon"
+              className="absolute top-2 right-2"
+              onClick={() => handleRemoveImage(blockKey)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        ) : (
+          <div 
+            className="border-2 border-dashed border-border rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors"
+            onClick={() => fileInputRefs.current[blockKey]?.click()}
+          >
+            {isUploading ? (
+              <div className="flex flex-col items-center gap-2">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <p className="text-sm text-muted-foreground">Wird hochgeladen...</p>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+                  <Image className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <p className="text-sm font-medium">Bild hochladen</p>
+                <p className="text-xs text-muted-foreground">PNG, JPG oder WebP bis 5MB</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        <input
+          type="file"
+          accept="image/*"
+          className="hidden"
+          ref={(el) => { fileInputRefs.current[blockKey] = el; }}
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) handleImageUpload(blockKey, file);
+            e.target.value = '';
+          }}
+        />
+
+        {!data?.image_url && (
+          <p className="text-xs text-muted-foreground">
+            Oder füge eine Bild-URL ein:
+          </p>
+        )}
+        
+        <Input
+          value={data?.image_url || ''}
+          onChange={(e) => handleInputChange(blockKey, 'image_url', e.target.value)}
+          placeholder="https://example.com/bild.jpg"
+        />
+      </div>
+    );
   }
 
   function renderBlockEditor(blockKey: string, block: { key: string; label: string; description: string; fields: string[] }) {
@@ -311,6 +462,8 @@ export function CMSEditor() {
             </div>
           )}
 
+          {block.fields.includes("image_url") && renderImageUpload(blockKey)}
+
           {(block.fields.includes("cta_text") || block.fields.includes("cta_link")) && (
             <div className="grid gap-4 md:grid-cols-2">
               {block.fields.includes("cta_text") && (
@@ -340,8 +493,18 @@ export function CMSEditor() {
           )}
 
           {/* Preview */}
-          <div className="mt-6 p-4 rounded-lg bg-muted/50 border">
+          <div className="mt-6 p-4 rounded-lg bg-muted/50 border overflow-hidden">
             <p className="text-xs text-muted-foreground mb-3">Vorschau</p>
+            {data.image_url && (
+              <div className="relative h-32 -mx-4 -mt-3 mb-4 overflow-hidden">
+                <img 
+                  src={data.image_url} 
+                  alt="Preview" 
+                  className="w-full h-full object-cover opacity-60"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-muted/90 to-transparent" />
+              </div>
+            )}
             <h3 className="font-display text-xl font-bold text-foreground mb-2">
               {data.title}
             </h3>
