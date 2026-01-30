@@ -14,11 +14,12 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Edit, Trash2, Eye, Loader2 } from "lucide-react";
 
-type NewsCategory = "news" | "foerderung";
+type NewsCategory = "news" | "foerderung" | "blog";
 
 const categoryLabels: Record<NewsCategory, string> = {
   news: "News",
   foerderung: "Förderung",
+  blog: "Blog",
 };
 
 interface NewsPost {
@@ -295,7 +296,13 @@ export function NewsManager() {
                       {post.title}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={post.category === "foerderung" ? "outline" : "secondary"} className={post.category === "foerderung" ? "border-warning text-warning" : ""}>
+                      <Badge 
+                        variant={post.category === "news" ? "secondary" : "outline"} 
+                        className={
+                          post.category === "foerderung" ? "border-warning text-warning" : 
+                          post.category === "blog" ? "border-primary text-primary" : ""
+                        }
+                      >
                         {categoryLabels[post.category] || "News"}
                       </Badge>
                     </TableCell>
@@ -370,6 +377,7 @@ export function NewsManager() {
                 <SelectContent>
                   <SelectItem value="news">News</SelectItem>
                   <SelectItem value="foerderung">Fördernews</SelectItem>
+                  <SelectItem value="blog">Blogbeitrag</SelectItem>
                 </SelectContent>
               </Select>
             </div>
