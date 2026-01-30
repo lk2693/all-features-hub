@@ -14,6 +14,7 @@ const stats = [
 interface HeroContent {
   title: string;
   subtitle: string;
+  image_url: string | null;
   cta_text: string;
   cta_link: string;
 }
@@ -21,6 +22,7 @@ interface HeroContent {
 const defaultContent: HeroContent = {
   title: "Gemeinsam für eine lebendige Kulturszene",
   subtitle: "Der Kulturrat Braunschweig vernetzt Kulturschaffende, bietet Ressourcen und setzt sich für die Interessen der lokalen Kulturszene ein.",
+  image_url: null,
   cta_text: "Mehr erfahren",
   cta_link: "/ueber-uns",
 };
@@ -33,7 +35,7 @@ export default function HeroSection() {
       try {
         const { data, error } = await supabase
           .from("cms_content")
-          .select("title, subtitle, cta_text, cta_link")
+          .select("title, subtitle, image_url, cta_text, cta_link")
           .eq("block_key", "hero")
           .maybeSingle();
 
@@ -43,6 +45,7 @@ export default function HeroSection() {
           setContent({
             title: data.title || defaultContent.title,
             subtitle: data.subtitle || defaultContent.subtitle,
+            image_url: data.image_url || null,
             cta_text: data.cta_text || defaultContent.cta_text,
             cta_link: data.cta_link || defaultContent.cta_link,
           });
@@ -123,29 +126,50 @@ export default function HeroSection() {
               {/* Main visual container */}
               <div className="absolute inset-0 rounded-3xl bg-gradient-hero opacity-20" />
               <div className="absolute inset-4 rounded-2xl bg-card shadow-card overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
-                <div className="relative h-full p-8 flex flex-col justify-center items-center text-center">
-                  <div className="w-20 h-20 rounded-2xl bg-gradient-hero flex items-center justify-center mb-6 shadow-glow animate-float">
-                    <Users className="h-10 w-10 text-primary-foreground" />
-                  </div>
-                  <h3 className="font-display text-xl font-semibold text-foreground mb-2">
-                    Kulturelles Netzwerk
-                  </h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">
-                    Künstler:innen, Kulturinstitutionen und Kreative arbeiten zusammen
-                  </p>
-                  
-                  {/* Decorative elements */}
-                  <div className="absolute top-6 left-6 w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
-                    <Calendar className="h-6 w-6 text-secondary-foreground" />
-                  </div>
-                  <div className="absolute bottom-6 right-6 w-12 h-12 rounded-xl bg-accent/20 flex items-center justify-center">
-                    <Folder className="h-6 w-6 text-accent-foreground" />
-                  </div>
-                  <div className="absolute top-1/4 right-6 w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Heart className="h-4 w-4 text-primary" />
-                  </div>
-                </div>
+                {content.image_url ? (
+                  <>
+                    <img 
+                      src={content.image_url} 
+                      alt="Hero" 
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-card/90 via-card/30 to-transparent" />
+                    <div className="relative h-full p-8 flex flex-col justify-end items-center text-center">
+                      <h3 className="font-display text-xl font-semibold text-foreground mb-2">
+                        Kulturelles Netzwerk
+                      </h3>
+                      <p className="text-muted-foreground text-sm leading-relaxed">
+                        Künstler:innen, Kulturinstitutionen und Kreative arbeiten zusammen
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
+                    <div className="relative h-full p-8 flex flex-col justify-center items-center text-center">
+                      <div className="w-20 h-20 rounded-2xl bg-gradient-hero flex items-center justify-center mb-6 shadow-glow animate-float">
+                        <Users className="h-10 w-10 text-primary-foreground" />
+                      </div>
+                      <h3 className="font-display text-xl font-semibold text-foreground mb-2">
+                        Kulturelles Netzwerk
+                      </h3>
+                      <p className="text-muted-foreground text-sm leading-relaxed">
+                        Künstler:innen, Kulturinstitutionen und Kreative arbeiten zusammen
+                      </p>
+                      
+                      {/* Decorative elements */}
+                      <div className="absolute top-6 left-6 w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
+                        <Calendar className="h-6 w-6 text-secondary-foreground" />
+                      </div>
+                      <div className="absolute bottom-6 right-6 w-12 h-12 rounded-xl bg-accent/20 flex items-center justify-center">
+                        <Folder className="h-6 w-6 text-accent-foreground" />
+                      </div>
+                      <div className="absolute top-1/4 right-6 w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <Heart className="h-4 w-4 text-primary" />
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </motion.div>
