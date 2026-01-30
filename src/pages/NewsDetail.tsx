@@ -6,6 +6,7 @@ import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ShareButtons } from "@/components/ShareButtons";
 import { supabase } from "@/integrations/supabase/client";
 
 interface NewsPost {
@@ -144,15 +145,21 @@ export default function NewsDetail() {
               {post?.title}
             </h1>
 
-            <div className="flex flex-wrap items-center gap-4 text-muted-foreground">
-              <span className="flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                {formatDate(post?.published_at || post?.created_at || "")}
-              </span>
-              <span className="flex items-center gap-2">
-                <User className="h-4 w-4" />
-                {post?.author_name}
-              </span>
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex flex-wrap items-center gap-4 text-muted-foreground">
+                <span className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  {formatDate(post?.published_at || post?.created_at || "")}
+                </span>
+                <span className="flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  {post?.author_name}
+                </span>
+              </div>
+              <ShareButtons
+                title={post?.title || ""}
+                description={post?.excerpt || ""}
+              />
             </div>
           </motion.div>
         </div>
@@ -195,12 +202,12 @@ export default function NewsDetail() {
             ))}
           </motion.div>
 
-          {/* Back Button */}
+          {/* Footer with Share and Back */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="mt-12 pt-8 border-t border-border"
+            className="mt-12 pt-8 border-t border-border flex flex-wrap items-center justify-between gap-4"
           >
             <Button variant="outline" asChild>
               <Link to="/news">
@@ -208,6 +215,11 @@ export default function NewsDetail() {
                 Alle News anzeigen
               </Link>
             </Button>
+            <ShareButtons
+              title={post?.title || ""}
+              description={post?.excerpt || ""}
+              variant="inline"
+            />
           </motion.div>
         </div>
       </section>
