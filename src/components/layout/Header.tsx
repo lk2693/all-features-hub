@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, User, LogOut, Shield } from "lucide-react";
+import { Menu, X, User, LogOut, Shield, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
@@ -13,6 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { GlobalSearch } from "@/components/GlobalSearch";
 
 const navigation = [
   { name: "Über uns", href: "/ueber-uns" },
@@ -26,6 +27,7 @@ const navigation = [
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut, isLoading } = useAuth();
@@ -66,6 +68,17 @@ export default function Header() {
               {item.name}
             </Link>
           ))}
+          
+          {/* Search Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setSearchOpen(true)}
+            className="text-muted-foreground hover:text-foreground"
+          >
+            <Search className="h-4 w-4" />
+            <span className="ml-2 text-xs text-muted-foreground hidden xl:inline">⌘K</span>
+          </Button>
         </div>
 
         {/* CTA Buttons & Auth */}
@@ -117,15 +130,25 @@ export default function Header() {
           )}
         </div>
 
-        {/* Mobile menu button */}
-        <button
-          type="button"
-          className="lg:hidden inline-flex items-center justify-center rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        >
-          <span className="sr-only">Menü öffnen</span>
-          {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
+        {/* Mobile search + menu buttons */}
+        <div className="flex items-center gap-2 lg:hidden">
+          <button
+            type="button"
+            className="inline-flex items-center justify-center rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+            onClick={() => setSearchOpen(true)}
+          >
+            <span className="sr-only">Suche öffnen</span>
+            <Search className="h-5 w-5" />
+          </button>
+          <button
+            type="button"
+            className="inline-flex items-center justify-center rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            <span className="sr-only">Menü öffnen</span>
+            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
       </nav>
 
       {/* Mobile menu */}
@@ -207,6 +230,9 @@ export default function Header() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Global Search Dialog */}
+      <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} />
     </header>
   );
 }
