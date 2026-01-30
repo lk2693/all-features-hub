@@ -11,7 +11,15 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Edit, Trash2, Eye, Loader2 } from "lucide-react";
+
+type NewsCategory = "news" | "foerderung";
+
+const categoryLabels: Record<NewsCategory, string> = {
+  news: "News",
+  foerderung: "Förderung",
+};
 
 interface NewsPost {
   id: string;
@@ -24,6 +32,7 @@ interface NewsPost {
   is_published: boolean;
   published_at: string | null;
   created_at: string;
+  category: NewsCategory;
 }
 
 interface NewsFormData {
@@ -33,6 +42,7 @@ interface NewsFormData {
   content: string;
   cover_image_url: string;
   is_published: boolean;
+  category: NewsCategory;
 }
 
 const defaultFormData: NewsFormData = {
@@ -42,6 +52,7 @@ const defaultFormData: NewsFormData = {
   content: "",
   cover_image_url: "",
   is_published: false,
+  category: "news",
 };
 
 export function NewsManager() {
@@ -70,7 +81,7 @@ export function NewsManager() {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setPosts(data || []);
+      setPosts((data || []) as NewsPost[]);
     } catch (error) {
       console.error("Error fetching posts:", error);
       toast({
@@ -117,6 +128,7 @@ export function NewsManager() {
       content: post.content,
       cover_image_url: post.cover_image_url || "",
       is_published: post.is_published,
+      category: post.category || "news",
     });
     setIsDialogOpen(true);
   }
@@ -143,6 +155,7 @@ export function NewsManager() {
         published_at: formData.is_published ? new Date().toISOString() : null,
         author_id: user?.id,
         author_name: user?.user_metadata?.display_name || user?.email?.split("@")[0] || "Admin",
+        category: formData.category,
       };
 
       if (editingPost) {
@@ -164,7 +177,7 @@ export function NewsManager() {
 
         if (error) throw error;
         
-        setPosts(prev => [data, ...prev]);
+        setPosts(prev => [data as NewsPost, ...prev]);
         toast({ title: "Erstellt", description: "News wurde erstellt." });
       }
 
@@ -232,7 +245,7 @@ export function NewsManager() {
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Entwürfe</CardDescription>
-            <CardTitle className="text-3xl text-amber-600">{draftPosts.length}</CardTitle>
+            <CardTitle className="text-3xl text-warning">{draftPosts.length}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
@@ -268,6 +281,7 @@ export function NewsManager() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Titel</TableHead>
+                  <TableHead>Kategorie</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Autor</TableHead>
                   <TableHead>Erstellt</TableHead>
@@ -279,6 +293,11 @@ export function NewsManager() {
                   <TableRow key={post.id}>
                     <TableCell className="font-medium max-w-[200px] truncate">
                       {post.title}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={post.category === "foerderung" ? "outline" : "secondary"} className={post.category === "foerderung" ? "border-warning text-warning" : ""}>
+                        {categoryLabels[post.category] || "News"}
+                      </Badge>
                     </TableCell>
                     <TableCell>
                       <Badge variant={post.is_published ? "default" : "secondary"}>
@@ -339,6 +358,22 @@ export function NewsManager() {
           </DialogHeader>
 
           <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="category">Kategorie *</Label>
+              <Select
+                value={formData.category}
+                onValueChange={(value: NewsCategory) => setFormData(prev => ({ ...prev, category: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Kategorie wählen" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="news">News</SelectItem>
+                  <SelectItem value="foerderung">Fördernews</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="title">Titel *</Label>
               <Input
