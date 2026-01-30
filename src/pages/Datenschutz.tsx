@@ -1,7 +1,12 @@
 import Layout from "@/components/layout/Layout";
 import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { useCookieConsent } from "@/contexts/CookieConsentContext";
+import { Cookie, Shield, BarChart3, Megaphone } from "lucide-react";
 
 export default function Datenschutz() {
+  const { resetConsent } = useCookieConsent();
+
   return (
     <Layout>
       <section className="py-16 lg:py-24 bg-gradient-section">
@@ -54,11 +59,50 @@ export default function Datenschutz() {
               auf Berichtigung, Sperrung oder Löschung dieser Daten.
             </p>
 
-            <h2 className="font-display text-2xl font-semibold mb-4">5. Cookies</h2>
+            <h2 className="font-display text-2xl font-semibold mb-4 flex items-center gap-2">
+              <Cookie className="h-6 w-6 text-primary" />
+              5. Cookies
+            </h2>
             <p className="text-muted-foreground mb-6">
-              Diese Website verwendet nur technisch notwendige Cookies. 
-              Eine Weitergabe an Dritte findet nicht statt.
+              Diese Website verwendet Cookies in verschiedenen Kategorien. Du kannst deine Einstellungen jederzeit anpassen.
             </p>
+
+            <div className="space-y-4 mb-6">
+              <div className="flex items-start gap-3 p-4 rounded-lg border border-border bg-muted/30">
+                <Shield className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-medium">Notwendige Cookies</p>
+                  <p className="text-sm text-muted-foreground">
+                    Diese Cookies sind für die Grundfunktionen der Website erforderlich, z.B. für die Anmeldung und Sicherheit. Sie können nicht deaktiviert werden.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 p-4 rounded-lg border border-border bg-muted/30">
+                <BarChart3 className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-medium">Statistik-Cookies</p>
+                  <p className="text-sm text-muted-foreground">
+                    Diese Cookies helfen uns zu verstehen, wie Besucher mit der Website interagieren. Die Daten werden anonymisiert erfasst.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 p-4 rounded-lg border border-border bg-muted/30">
+                <Megaphone className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-medium">Marketing-Cookies</p>
+                  <p className="text-sm text-muted-foreground">
+                    Diese Cookies ermöglichen personalisierte Inhalte und Newsletter-Tracking, um dir relevante Informationen zu zeigen.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <Button onClick={resetConsent} className="bg-gradient-hero hover:opacity-90">
+              <Cookie className="mr-2 h-4 w-4" />
+              Cookie-Einstellungen ändern
+            </Button>
           </div>
         </div>
       </section>

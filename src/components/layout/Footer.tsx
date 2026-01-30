@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
-import { Instagram, Youtube, Mail, MapPin, Phone } from "lucide-react";
+import { Instagram, Youtube, Mail, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useCookieConsent } from "@/contexts/CookieConsentContext";
 
 const footerLinks = {
   kulturrat: [
@@ -26,6 +27,7 @@ const footerLinks = {
     { name: "Impressum", href: "/impressum" },
     { name: "Datenschutz", href: "/datenschutz" },
     { name: "Barrierefreiheit", href: "/barrierefreiheit" },
+    { name: "Cookie-Einstellungen", href: "#cookies", isCookieSettings: true },
   ],
 };
 
@@ -36,6 +38,8 @@ const socialLinks = [
 ];
 
 export default function Footer() {
+  const { resetConsent } = useCookieConsent();
+
   return (
     <footer className="border-t border-border bg-tertiary text-tertiary-foreground">
       {/* Newsletter Section */}
@@ -157,12 +161,21 @@ export default function Footer() {
             <ul className="space-y-3">
               {footerLinks.rechtliches.map((link) => (
                 <li key={link.name}>
-                  <Link
-                    to={link.href}
-                    className="text-sm text-tertiary-foreground/70 hover:text-tertiary-foreground transition-colors"
-                  >
-                    {link.name}
-                  </Link>
+                  {"isCookieSettings" in link && link.isCookieSettings ? (
+                    <button
+                      onClick={resetConsent}
+                      className="text-sm text-tertiary-foreground/70 hover:text-tertiary-foreground transition-colors text-left"
+                    >
+                      {link.name}
+                    </button>
+                  ) : (
+                    <Link
+                      to={link.href}
+                      className="text-sm text-tertiary-foreground/70 hover:text-tertiary-foreground transition-colors"
+                    >
+                      {link.name}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>

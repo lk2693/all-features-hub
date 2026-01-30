@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
+import { CookieConsentProvider } from "@/contexts/CookieConsentContext";
+import CookieBanner from "@/components/CookieBanner";
 import Index from "./pages/Index";
 import UeberUns from "./pages/UeberUns";
 import News from "./pages/News";
@@ -25,30 +27,33 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route path="/ueber-uns" element={<UeberUns />} />
-            <Route path="/news" element={<News />} />
-            <Route path="/news/:slug" element={<NewsDetail />} />
-            <Route path="/kalender" element={<Kalender />} />
-            <Route path="/ressourcen" element={<Ressourcen />} />
-            <Route path="/ressourcen/eintragen" element={<RessourcenEintragen />} />
-            <Route path="/foerderung" element={<Foerderung />} />
-            <Route path="/mitmachen" element={<Mitmachen />} />
-            <Route path="/kontakt" element={<Kontakt />} />
-            <Route path="/impressum" element={<Impressum />} />
-            <Route path="/datenschutz" element={<Datenschutz />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+      <CookieConsentProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/admin" element={<Admin />} />
+              <Route path="/ueber-uns" element={<UeberUns />} />
+              <Route path="/news" element={<News />} />
+              <Route path="/news/:slug" element={<NewsDetail />} />
+              <Route path="/kalender" element={<Kalender />} />
+              <Route path="/ressourcen" element={<Ressourcen />} />
+              <Route path="/ressourcen/eintragen" element={<RessourcenEintragen />} />
+              <Route path="/foerderung" element={<Foerderung />} />
+              <Route path="/mitmachen" element={<Mitmachen />} />
+              <Route path="/kontakt" element={<Kontakt />} />
+              <Route path="/impressum" element={<Impressum />} />
+              <Route path="/datenschutz" element={<Datenschutz />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+          <CookieBanner />
+        </TooltipProvider>
+      </CookieConsentProvider>
     </AuthProvider>
   </QueryClientProvider>
 );
