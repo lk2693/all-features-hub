@@ -35,6 +35,10 @@
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
     
+    /* Warning: Amber for alerts/highlights */
+    --warning: 38 92% 50%;
+    --warning-foreground: 38 92% 20%;
+    
     /* Borders & Inputs */
     --border: 40 20% 88%;
     --input: 40 20% 88%;
@@ -92,6 +96,9 @@
     
     --destructive: 0 62% 50%;
     --destructive-foreground: 0 0% 100%;
+    
+    --warning: 38 92% 45%;
+    --warning-foreground: 38 92% 90%;
     
     --border: 220 20% 20%;
     --input: 220 20% 20%;

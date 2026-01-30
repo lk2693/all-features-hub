@@ -1,14 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Layout from "@/components/layout/Layout";
-import { ExternalLink, Calendar, Euro, Search } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ExternalLink, Calendar, Euro, Search, ArrowRight } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useCMSContent } from "@/hooks/useCMSContent";
 import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const categories = ["Alle", "Stiftungen", "Öffentlich", "Stipendien", "Ausschreibungen"];
 
@@ -75,11 +77,45 @@ const foerderungen = [
   },
 ];
 
+interface FoerderNews {
+  id: string;
+  title: string;
+  excerpt: string | null;
+  slug: string;
+  published_at: string | null;
+  created_at: string;
+}
+
 export default function Foerderung() {
   const [selectedCategory, setSelectedCategory] = useState("Alle");
   const [searchQuery, setSearchQuery] = useState("");
+  const [foerderNews, setFoerderNews] = useState<FoerderNews[]>([]);
+  const [isLoadingNews, setIsLoadingNews] = useState(true);
   const { content: heroContent } = useCMSContent("foerderung_hero");
   const { content: tippContent } = useCMSContent("foerderung_tipp");
+
+  useEffect(() => {
+    async function fetchFoerderNews() {
+      try {
+        const { data, error } = await supabase
+          .from("news_posts")
+          .select("id, title, excerpt, slug, published_at, created_at")
+          .eq("is_published", true)
+          .eq("category", "foerderung")
+          .order("published_at", { ascending: false })
+          .limit(5);
+
+        if (error) throw error;
+        setFoerderNews(data || []);
+      } catch (error) {
+        console.error("Error fetching foerder news:", error);
+      } finally {
+        setIsLoadingNews(false);
+      }
+    }
+
+    fetchFoerderNews();
+  }, []);
 
   const filteredFoerderungen = foerderungen.filter((item) => {
     const matchesCategory = selectedCategory === "Alle" || item.category === selectedCategory;
@@ -158,6 +194,66 @@ export default function Foerderung() {
           </div>
         </div>
       </section>
+
+      {/* Förder-News Section */}
+      {(isLoadingNews || foerderNews.length > 0) && (
+        <section className="py-12 bg-muted/30 border-b border-border">
+          <div className="container">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-display text-2xl font-bold text-foreground">Aktuelle Fördernews</h2>
+              <Link to="/news" className="text-primary hover:underline text-sm flex items-center gap-1">
+                Alle News <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+            
+            {isLoadingNews ? (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {[1, 2, 3].map((i) => (
+                  <Card key={i}>
+                    <CardHeader className="pb-2">
+                      <Skeleton className="h-5 w-3/4" />
+                    </CardHeader>
+                    <CardContent>
+                      <Skeleton className="h-4 w-full mb-2" />
+                      <Skeleton className="h-4 w-2/3" />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {foerderNews.map((news) => (
+                  <Link key={news.id} to={`/news/${news.slug}`} className="group">
+                    <Card className="h-full hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300">
+                      <CardHeader className="pb-2">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge variant="outline" className="border-warning text-warning">Fördernews</Badge>
+                          <span className="text-xs text-muted-foreground">
+                            {new Date(news.published_at || news.created_at).toLocaleDateString("de-DE")}
+                          </span>
+                        </div>
+                        <CardTitle className="text-lg group-hover:text-primary transition-colors line-clamp-2">
+                          {news.title}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-muted-foreground line-clamp-2">
+                          {news.excerpt || "Lesen Sie mehr..."}
+                        </p>
+                      </CardContent>
+                      <CardFooter className="pt-0">
+                        <span className="text-sm font-medium text-primary flex items-center gap-1 group-hover:gap-2 transition-all">
+                          Weiterlesen <ArrowRight className="h-4 w-4" />
+                        </span>
+                      </CardFooter>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* Funding List */}
       <section className="py-16 lg:py-24 bg-background">
