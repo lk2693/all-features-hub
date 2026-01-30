@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, User, LogOut } from "lucide-react";
+import { Menu, X, User, LogOut, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -28,6 +29,7 @@ export default function Header() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut, isLoading } = useAuth();
+  const { isAdmin } = useIsAdmin();
 
   const handleSignOut = async () => {
     await signOut();
@@ -80,12 +82,20 @@ export default function Header() {
                       </span>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem asChild>
-                      <Link to="/ressourcen/eintragen" className="cursor-pointer">
-                        Ressource eintragen
-                      </Link>
-                    </DropdownMenuItem>
+                    <DropdownMenuContent align="end" className="w-48">
+                      {isAdmin && (
+                        <DropdownMenuItem asChild>
+                          <Link to="/admin" className="cursor-pointer">
+                            <Shield className="mr-2 h-4 w-4" />
+                            Admin Dashboard
+                          </Link>
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuItem asChild>
+                        <Link to="/ressourcen/eintragen" className="cursor-pointer">
+                          Ressource eintragen
+                        </Link>
+                      </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive">
                       <LogOut className="mr-2 h-4 w-4" />
@@ -151,6 +161,14 @@ export default function Header() {
                         <div className="px-4 py-2 text-sm text-muted-foreground">
                           Angemeldet als: {user.email}
                         </div>
+                        {isAdmin && (
+                          <Button variant="outline" className="w-full mb-2" asChild>
+                            <Link to="/admin" onClick={() => setMobileMenuOpen(false)}>
+                              <Shield className="mr-2 h-4 w-4" />
+                              Admin Dashboard
+                            </Link>
+                          </Button>
+                        )}
                         <Button variant="outline" className="w-full" asChild>
                           <Link to="/ressourcen/eintragen" onClick={() => setMobileMenuOpen(false)}>
                             Ressource eintragen

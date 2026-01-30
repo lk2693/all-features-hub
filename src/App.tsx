@@ -16,6 +16,7 @@ import Kontakt from "./pages/Kontakt";
 import Impressum from "./pages/Impressum";
 import Datenschutz from "./pages/Datenschutz";
 import Auth from "./pages/Auth";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/admin" element={<Admin />} />
             <Route path="/ueber-uns" element={<UeberUns />} />
             <Route path="/news" element={<News />} />
             <Route path="/kalender" element={<Kalender />} />
