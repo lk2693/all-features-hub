@@ -8,6 +8,14 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 
+type NewsCategory = "news" | "foerderung" | "blog";
+
+const categoryLabels: Record<NewsCategory, string> = {
+  news: "News",
+  foerderung: "Förderung",
+  blog: "Blog",
+};
+
 interface NewsPost {
   id: string;
   title: string;
@@ -15,10 +23,11 @@ interface NewsPost {
   slug: string;
   published_at: string | null;
   created_at: string;
+  category: NewsCategory;
 }
 
 // Fallback data for when no news is in the database
-const fallbackNews = [
+const fallbackNews: NewsPost[] = [
   {
     id: "1",
     title: "Neue Förderrichtlinien für Kulturprojekte 2025",
@@ -26,6 +35,7 @@ const fallbackNews = [
     slug: "neue-foerderrichtlinien-2025",
     published_at: new Date().toISOString(),
     created_at: new Date().toISOString(),
+    category: "foerderung",
   },
   {
     id: "2",
@@ -34,6 +44,7 @@ const fallbackNews = [
     slug: "vollversammlung-februar-2025",
     published_at: new Date().toISOString(),
     created_at: new Date().toISOString(),
+    category: "news",
   },
   {
     id: "3",
@@ -42,6 +53,7 @@ const fallbackNews = [
     slug: "kooperation-staatstheater",
     published_at: new Date().toISOString(),
     created_at: new Date().toISOString(),
+    category: "blog",
   },
 ];
 
@@ -75,7 +87,7 @@ export default function NewsSection() {
       try {
         const { data, error } = await supabase
           .from("news_posts")
-          .select("id, title, excerpt, slug, published_at, created_at")
+          .select("id, title, excerpt, slug, published_at, created_at, category")
           .eq("is_published", true)
           .order("published_at", { ascending: false })
           .limit(3);
@@ -83,7 +95,7 @@ export default function NewsSection() {
         if (error) throw error;
         
         // Use database news if available, otherwise use fallback
-        setNews(data && data.length > 0 ? data : fallbackNews);
+        setNews(data && data.length > 0 ? (data as NewsPost[]) : fallbackNews);
       } catch (error) {
         console.error("Error fetching news:", error);
         setNews(fallbackNews);
@@ -158,8 +170,14 @@ export default function NewsSection() {
                   <Card className="h-full flex flex-col transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1 border-border/50">
                     <CardHeader className="pb-3">
                       <div className="flex items-center justify-between gap-4 mb-2">
-                        <Badge variant="secondary" className="font-medium">
-                          News
+                        <Badge 
+                          variant={item.category === "news" ? "secondary" : "outline"}
+                          className={
+                            item.category === "foerderung" ? "border-warning text-warning font-medium" : 
+                            item.category === "blog" ? "border-primary text-primary font-medium" : "font-medium"
+                          }
+                        >
+                          {categoryLabels[item.category] || "News"}
                         </Badge>
                         <span className="text-sm text-muted-foreground flex items-center gap-1.5">
                           <Calendar className="h-3.5 w-3.5" />
