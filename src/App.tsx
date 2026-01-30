@@ -23,6 +23,8 @@ import NewsDetail from "./pages/NewsDetail";
 import Presse from "./pages/Presse";
 import Barrierefreiheit from "./pages/Barrierefreiheit";
 import Mitgliederbereich from "./pages/Mitgliederbereich";
+import BestPractices from "./pages/BestPractices";
+import BestPracticeDetail from "./pages/BestPracticeDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -53,6 +55,8 @@ const App = () => (
               <Route path="/presse" element={<Presse />} />
               <Route path="/barrierefreiheit" element={<Barrierefreiheit />} />
               <Route path="/mitgliederbereich" element={<Mitgliederbereich />} />
+              <Route path="/best-practices" element={<BestPractices />} />
+              <Route path="/best-practices/:slug" element={<BestPracticeDetail />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

@@ -12,6 +12,7 @@ const footerLinks = {
   ],
   angebote: [
     { name: "News & Blog", href: "/news" },
+    { name: "Best Practices", href: "/best-practices" },
     { name: "Kalender", href: "/kalender" },
     { name: "Ressourcenpool", href: "/ressourcen" },
     { name: "Förderinfos", href: "/foerderung" },
