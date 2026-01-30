@@ -1,17 +1,17 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu";
+import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const navigation = [
   { name: "Über uns", href: "/ueber-uns" },
@@ -26,6 +26,13 @@ const navigation = [
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, signOut, isLoading } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
@@ -59,14 +66,45 @@ export default function Header() {
           ))}
         </div>
 
-        {/* CTA Button */}
-        <div className="hidden lg:flex lg:items-center lg:gap-4">
-          <Button variant="outline" size="sm" asChild>
-            <Link to="/newsletter">Newsletter</Link>
-          </Button>
-          <Button size="sm" className="bg-gradient-hero hover:opacity-90" asChild>
-            <Link to="/mitmachen">Mitglied werden</Link>
-          </Button>
+        {/* CTA Buttons & Auth */}
+        <div className="hidden lg:flex lg:items-center lg:gap-3">
+          {!isLoading && (
+            <>
+              {user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-2">
+                      <User className="h-4 w-4" />
+                      <span className="max-w-[120px] truncate">
+                        {user.user_metadata?.display_name || user.email?.split("@")[0]}
+                      </span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem asChild>
+                      <Link to="/ressourcen/eintragen" className="cursor-pointer">
+                        Ressource eintragen
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive">
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Abmelden
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link to="/auth">Anmelden</Link>
+                  </Button>
+                  <Button size="sm" className="bg-gradient-hero hover:opacity-90" asChild>
+                    <Link to="/mitmachen">Mitglied werden</Link>
+                  </Button>
+                </>
+              )}
+            </>
+          )}
         </div>
 
         {/* Mobile menu button */}
@@ -106,12 +144,46 @@ export default function Header() {
                 </Link>
               ))}
               <div className="pt-4 space-y-2 border-t border-border">
-                <Button variant="outline" className="w-full" asChild>
-                  <Link to="/newsletter">Newsletter abonnieren</Link>
-                </Button>
-                <Button className="w-full bg-gradient-hero hover:opacity-90" asChild>
-                  <Link to="/mitmachen">Mitglied werden</Link>
-                </Button>
+                {!isLoading && (
+                  <>
+                    {user ? (
+                      <>
+                        <div className="px-4 py-2 text-sm text-muted-foreground">
+                          Angemeldet als: {user.email}
+                        </div>
+                        <Button variant="outline" className="w-full" asChild>
+                          <Link to="/ressourcen/eintragen" onClick={() => setMobileMenuOpen(false)}>
+                            Ressource eintragen
+                          </Link>
+                        </Button>
+                        <Button 
+                          variant="destructive" 
+                          className="w-full" 
+                          onClick={() => {
+                            handleSignOut();
+                            setMobileMenuOpen(false);
+                          }}
+                        >
+                          <LogOut className="mr-2 h-4 w-4" />
+                          Abmelden
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button variant="outline" className="w-full" asChild>
+                          <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>
+                            Anmelden
+                          </Link>
+                        </Button>
+                        <Button className="w-full bg-gradient-hero hover:opacity-90" asChild>
+                          <Link to="/mitmachen" onClick={() => setMobileMenuOpen(false)}>
+                            Mitglied werden
+                          </Link>
+                        </Button>
+                      </>
+                    )}
+                  </>
+                )}
               </div>
             </div>
           </motion.div>
