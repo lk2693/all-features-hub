@@ -20,6 +20,7 @@ import Datenschutz from "./pages/Datenschutz";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
 import NewsDetail from "./pages/NewsDetail";
+import Presse from "./pages/Presse";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -47,6 +48,7 @@ const App = () => (
               <Route path="/kontakt" element={<Kontakt />} />
               <Route path="/impressum" element={<Impressum />} />
               <Route path="/datenschutz" element={<Datenschutz />} />
+              <Route path="/presse" element={<Presse />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

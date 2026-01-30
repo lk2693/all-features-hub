@@ -26,7 +26,7 @@ const footerLinks = {
   rechtliches: [
     { name: "Impressum", href: "/impressum" },
     { name: "Datenschutz", href: "/datenschutz" },
-    { name: "Barrierefreiheit", href: "/barrierefreiheit" },
+    { name: "Presse", href: "/presse" },
     { name: "Cookie-Einstellungen", href: "#cookies", isCookieSettings: true },
   ],
 };
