@@ -4,8 +4,9 @@ import Layout from "@/components/layout/Layout";
 import { Calendar, Clock, MapPin, Filter } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { useCMSContent } from "@/hooks/useCMSContent";
 
 const eventTypes = ["Alle", "Sitzung", "Frist", "Networking", "Workshop", "Veranstaltung"];
 
@@ -84,6 +85,7 @@ const allEvents = [
 
 export default function Kalender() {
   const [selectedType, setSelectedType] = useState("Alle");
+  const { content: heroContent } = useCMSContent("kalender_hero");
 
   const filteredEvents = selectedType === "Alle" 
     ? allEvents 
@@ -101,10 +103,10 @@ export default function Kalender() {
             className="max-w-3xl"
           >
             <h1 className="font-display text-4xl font-bold text-foreground sm:text-5xl">
-              Veranstaltungskalender
+              {heroContent.title}
             </h1>
             <p className="mt-6 text-lg text-muted-foreground leading-relaxed">
-              Alle wichtigen Termine: Sitzungen, Workshops, Netzwerktreffen und Förderfristen auf einen Blick.
+              {heroContent.subtitle}
             </p>
           </motion.div>
         </div>

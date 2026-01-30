@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import Layout from "@/components/layout/Layout";
-import { ExternalLink, Calendar, Euro, Building, Filter, Search, ArrowRight } from "lucide-react";
+import { ExternalLink, Calendar, Euro, Search } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { useCMSContent } from "@/hooks/useCMSContent";
+import { Link } from "react-router-dom";
 
 const categories = ["Alle", "Stiftungen", "Öffentlich", "Stipendien", "Ausschreibungen"];
 
@@ -76,6 +78,8 @@ const foerderungen = [
 export default function Foerderung() {
   const [selectedCategory, setSelectedCategory] = useState("Alle");
   const [searchQuery, setSearchQuery] = useState("");
+  const { content: heroContent } = useCMSContent("foerderung_hero");
+  const { content: tippContent } = useCMSContent("foerderung_tipp");
 
   const filteredFoerderungen = foerderungen.filter((item) => {
     const matchesCategory = selectedCategory === "Alle" || item.category === selectedCategory;
@@ -96,11 +100,10 @@ export default function Foerderung() {
             className="max-w-3xl"
           >
             <h1 className="font-display text-4xl font-bold text-foreground sm:text-5xl">
-              Förderinfos
+              {heroContent.title}
             </h1>
             <p className="mt-6 text-lg text-muted-foreground leading-relaxed">
-              Förderprogramme, Stipendien und Ausschreibungen für Kulturschaffende – 
-              übersichtlich aufbereitet mit Fristen und Tipps.
+              {heroContent.subtitle}
             </p>
           </motion.div>
         </div>
@@ -110,10 +113,14 @@ export default function Foerderung() {
       <section className="py-8 bg-accent/20 border-b border-border">
         <div className="container">
           <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
-            <span className="font-display font-semibold text-foreground">Tipp:</span>
+            <span className="font-display font-semibold text-foreground">{tippContent.title}:</span>
             <p className="text-muted-foreground">
-              Brauchst du Hilfe beim Schreiben von Förderanträgen? Wir bieten kostenlose Beratung an! 
-              <a href="/kontakt" className="text-primary hover:underline ml-1">Kontaktiere uns</a>
+              {tippContent.subtitle}
+              {tippContent.cta_link && tippContent.cta_text && (
+                <Link to={tippContent.cta_link} className="text-primary hover:underline ml-1">
+                  {tippContent.cta_text}
+                </Link>
+              )}
             </p>
           </div>
         </div>

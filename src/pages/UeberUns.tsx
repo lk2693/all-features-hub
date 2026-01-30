@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import Layout from "@/components/layout/Layout";
 import { Users, Target, FileText, Heart } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useCMSContent } from "@/hooks/useCMSContent";
 
 const vorstand = [
   { name: "Dr. Maria Schmidt", role: "1. Vorsitzende", bereich: "Bildende Kunst" },
@@ -11,6 +12,9 @@ const vorstand = [
 ];
 
 export default function UeberUns() {
+  const { content: heroContent } = useCMSContent("ueberuns_hero");
+  const { content: missionContent } = useCMSContent("ueberuns_mission");
+
   return (
     <Layout>
       {/* Hero */}
@@ -23,11 +27,10 @@ export default function UeberUns() {
             className="max-w-3xl"
           >
             <h1 className="font-display text-4xl font-bold text-foreground sm:text-5xl">
-              Über den Kulturrat
+              {heroContent.title}
             </h1>
             <p className="mt-6 text-lg text-muted-foreground leading-relaxed">
-              Der Kulturrat Braunschweig ist die Interessenvertretung der Kulturschaffenden in Braunschweig. 
-              Wir vernetzen, beraten und setzen uns für die Belange der lokalen Kulturszene ein.
+              {heroContent.subtitle}
             </p>
           </motion.div>
         </div>
@@ -48,17 +51,10 @@ export default function UeberUns() {
                   <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
                     <Target className="h-6 w-6 text-primary" />
                   </div>
-                  <CardTitle className="font-display text-2xl">Unsere Mission</CardTitle>
+                  <CardTitle className="font-display text-2xl">{missionContent.title}</CardTitle>
                 </CardHeader>
                 <CardContent className="text-muted-foreground leading-relaxed space-y-4">
-                  <p>
-                    Wir stärken die kulturelle Vielfalt in Braunschweig, indem wir Kulturschaffende vernetzen, 
-                    ihre Interessen vertreten und Ressourcen bündeln.
-                  </p>
-                  <p>
-                    Als unabhängige Stimme der Kulturszene setzen wir uns bei Politik und Verwaltung 
-                    für bessere Rahmenbedingungen für Kunst und Kultur ein.
-                  </p>
+                  <p>{missionContent.content}</p>
                 </CardContent>
               </Card>
             </motion.div>
