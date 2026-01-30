@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useAuth } from "@/hooks/useAuth";
@@ -7,9 +7,9 @@ import { AdminTabs, TabsContent } from "@/components/admin/AdminTabs";
 import { NewsManager } from "@/components/admin/NewsManager";
 import { CMSEditor } from "@/components/admin/CMSEditor";
 import { ResourcesManager } from "@/components/admin/ResourcesManager";
+import { BestPracticesManager } from "@/components/admin/BestPracticesManager";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, ShieldAlert } from "lucide-react";
-import { useEffect } from "react";
 
 export default function Admin() {
   const navigate = useNavigate();
@@ -76,6 +76,9 @@ export default function Admin() {
           </TabsContent>
           <TabsContent value="news">
             <NewsManager />
+          </TabsContent>
+          <TabsContent value="best-practices">
+            <BestPracticesManager />
           </TabsContent>
           <TabsContent value="cms">
             <CMSEditor />
