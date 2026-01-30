@@ -7,7 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Loader2, Save, RotateCcw } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Loader2, Save, RotateCcw, Home, Users, Calendar, Euro } from "lucide-react";
 
 interface CMSContent {
   id: string;
@@ -20,29 +21,116 @@ interface CMSContent {
   cta_link: string | null;
 }
 
-interface HeroFormData {
+interface BlockFormData {
   title: string;
   subtitle: string;
+  content: string;
   cta_text: string;
   cta_link: string;
 }
 
-const defaultHeroData: HeroFormData = {
-  title: "Gemeinsam für Kultur in Braunschweig",
-  subtitle: "Der Kulturrat Braunschweig vernetzt Kulturschaffende, fördert den Austausch und stärkt die kulturelle Vielfalt unserer Stadt.",
-  cta_text: "Mehr erfahren",
-  cta_link: "/ueber-uns",
+const pageBlocks = {
+  home: [
+    { 
+      key: "hero", 
+      label: "Hero-Bereich", 
+      description: "Der erste Bereich, den Besucher auf der Startseite sehen",
+      fields: ["title", "subtitle", "cta_text", "cta_link"]
+    },
+  ],
+  ueberuns: [
+    { 
+      key: "ueberuns_hero", 
+      label: "Hero-Bereich", 
+      description: "Einführung zur Über-uns-Seite",
+      fields: ["title", "subtitle"]
+    },
+    { 
+      key: "ueberuns_mission", 
+      label: "Mission", 
+      description: "Beschreibung der Mission des Kulturrats",
+      fields: ["title", "content"]
+    },
+  ],
+  kalender: [
+    { 
+      key: "kalender_hero", 
+      label: "Hero-Bereich", 
+      description: "Einführung zum Veranstaltungskalender",
+      fields: ["title", "subtitle"]
+    },
+  ],
+  foerderung: [
+    { 
+      key: "foerderung_hero", 
+      label: "Hero-Bereich", 
+      description: "Einführung zur Förderinfos-Seite",
+      fields: ["title", "subtitle"]
+    },
+    { 
+      key: "foerderung_tipp", 
+      label: "Tipp-Box", 
+      description: "Hinweis zur Förderberatung",
+      fields: ["title", "subtitle", "cta_text", "cta_link"]
+    },
+  ],
+};
+
+const defaultData: Record<string, BlockFormData> = {
+  hero: {
+    title: "Gemeinsam für Kultur in Braunschweig",
+    subtitle: "Der Kulturrat Braunschweig vernetzt Kulturschaffende, fördert den Austausch und stärkt die kulturelle Vielfalt unserer Stadt.",
+    content: "",
+    cta_text: "Mehr erfahren",
+    cta_link: "/ueber-uns",
+  },
+  ueberuns_hero: {
+    title: "Über den Kulturrat",
+    subtitle: "Der Kulturrat Braunschweig ist die Interessenvertretung der Kulturschaffenden in Braunschweig. Wir vernetzen, beraten und setzen uns für die Belange der lokalen Kulturszene ein.",
+    content: "",
+    cta_text: "",
+    cta_link: "",
+  },
+  ueberuns_mission: {
+    title: "Unsere Mission",
+    subtitle: "",
+    content: "Wir stärken die kulturelle Vielfalt in Braunschweig, indem wir Kulturschaffende vernetzen, ihre Interessen vertreten und Ressourcen bündeln. Als unabhängige Stimme der Kulturszene setzen wir uns bei Politik und Verwaltung für bessere Rahmenbedingungen für Kunst und Kultur ein.",
+    cta_text: "",
+    cta_link: "",
+  },
+  kalender_hero: {
+    title: "Veranstaltungskalender",
+    subtitle: "Alle wichtigen Termine: Sitzungen, Workshops, Netzwerktreffen und Förderfristen auf einen Blick.",
+    content: "",
+    cta_text: "",
+    cta_link: "",
+  },
+  foerderung_hero: {
+    title: "Förderinfos",
+    subtitle: "Förderprogramme, Stipendien und Ausschreibungen für Kulturschaffende – übersichtlich aufbereitet mit Fristen und Tipps.",
+    content: "",
+    cta_text: "",
+    cta_link: "",
+  },
+  foerderung_tipp: {
+    title: "Tipp",
+    subtitle: "Brauchst du Hilfe beim Schreiben von Förderanträgen? Wir bieten kostenlose Beratung an!",
+    content: "",
+    cta_text: "Kontaktiere uns",
+    cta_link: "/kontakt",
+  },
 };
 
 export function CMSEditor() {
   const { user } = useAuth();
   const { toast } = useToast();
   
-  const [heroContent, setHeroContent] = useState<CMSContent | null>(null);
-  const [heroFormData, setHeroFormData] = useState<HeroFormData>(defaultHeroData);
+  const [cmsContent, setCmsContent] = useState<Record<string, CMSContent>>({});
+  const [formData, setFormData] = useState<Record<string, BlockFormData>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [activeTab, setActiveTab] = useState("home");
 
   useEffect(() => {
     fetchCMSContent();
@@ -52,21 +140,34 @@ export function CMSEditor() {
     try {
       const { data, error } = await supabase
         .from("cms_content")
-        .select("*")
-        .eq("block_key", "hero")
-        .maybeSingle();
+        .select("*");
 
       if (error) throw error;
 
+      const contentMap: Record<string, CMSContent> = {};
+      const formDataMap: Record<string, BlockFormData> = {};
+
+      // Initialize with defaults
+      Object.keys(defaultData).forEach(key => {
+        formDataMap[key] = { ...defaultData[key] };
+      });
+
+      // Override with DB values
       if (data) {
-        setHeroContent(data);
-        setHeroFormData({
-          title: data.title || defaultHeroData.title,
-          subtitle: data.subtitle || defaultHeroData.subtitle,
-          cta_text: data.cta_text || defaultHeroData.cta_text,
-          cta_link: data.cta_link || defaultHeroData.cta_link,
+        data.forEach((item) => {
+          contentMap[item.block_key] = item;
+          formDataMap[item.block_key] = {
+            title: item.title || defaultData[item.block_key]?.title || "",
+            subtitle: item.subtitle || defaultData[item.block_key]?.subtitle || "",
+            content: item.content || defaultData[item.block_key]?.content || "",
+            cta_text: item.cta_text || defaultData[item.block_key]?.cta_text || "",
+            cta_link: item.cta_link || defaultData[item.block_key]?.cta_link || "",
+          };
         });
       }
+
+      setCmsContent(contentMap);
+      setFormData(formDataMap);
     } catch (error) {
       console.error("Error fetching CMS content:", error);
       toast({
@@ -79,58 +180,75 @@ export function CMSEditor() {
     }
   }
 
-  function handleInputChange(field: keyof HeroFormData, value: string) {
-    setHeroFormData(prev => ({ ...prev, [field]: value }));
+  function handleInputChange(blockKey: string, field: keyof BlockFormData, value: string) {
+    setFormData(prev => ({
+      ...prev,
+      [blockKey]: { ...prev[blockKey], [field]: value }
+    }));
     setHasChanges(true);
   }
 
   function handleReset() {
-    if (heroContent) {
-      setHeroFormData({
-        title: heroContent.title || defaultHeroData.title,
-        subtitle: heroContent.subtitle || defaultHeroData.subtitle,
-        cta_text: heroContent.cta_text || defaultHeroData.cta_text,
-        cta_link: heroContent.cta_link || defaultHeroData.cta_link,
-      });
-    } else {
-      setHeroFormData(defaultHeroData);
-    }
+    const formDataMap: Record<string, BlockFormData> = {};
+    
+    Object.keys(defaultData).forEach(key => {
+      if (cmsContent[key]) {
+        formDataMap[key] = {
+          title: cmsContent[key].title || defaultData[key]?.title || "",
+          subtitle: cmsContent[key].subtitle || defaultData[key]?.subtitle || "",
+          content: cmsContent[key].content || defaultData[key]?.content || "",
+          cta_text: cmsContent[key].cta_text || defaultData[key]?.cta_text || "",
+          cta_link: cmsContent[key].cta_link || defaultData[key]?.cta_link || "",
+        };
+      } else {
+        formDataMap[key] = { ...defaultData[key] };
+      }
+    });
+    
+    setFormData(formDataMap);
     setHasChanges(false);
   }
 
   async function handleSave() {
     setIsSaving(true);
     try {
-      const updateData = {
-        title: heroFormData.title,
-        subtitle: heroFormData.subtitle,
-        cta_text: heroFormData.cta_text,
-        cta_link: heroFormData.cta_link,
-        updated_by: user?.id,
-      };
+      // Get all block keys that need saving
+      const allBlockKeys = Object.keys(formData);
+      
+      for (const blockKey of allBlockKeys) {
+        const data = formData[blockKey];
+        const updateData = {
+          title: data.title,
+          subtitle: data.subtitle,
+          content: data.content,
+          cta_text: data.cta_text,
+          cta_link: data.cta_link,
+          updated_by: user?.id,
+        };
 
-      if (heroContent) {
-        const { error } = await supabase
-          .from("cms_content")
-          .update(updateData)
-          .eq("block_key", "hero");
+        if (cmsContent[blockKey]) {
+          const { error } = await supabase
+            .from("cms_content")
+            .update(updateData)
+            .eq("block_key", blockKey);
 
-        if (error) throw error;
-      } else {
-        const { data, error } = await supabase
-          .from("cms_content")
-          .insert({ ...updateData, block_key: "hero" })
-          .select()
-          .single();
+          if (error) throw error;
+        } else {
+          const { data: newData, error } = await supabase
+            .from("cms_content")
+            .insert({ ...updateData, block_key: blockKey })
+            .select()
+            .single();
 
-        if (error) throw error;
-        setHeroContent(data);
+          if (error) throw error;
+          setCmsContent(prev => ({ ...prev, [blockKey]: newData }));
+        }
       }
 
       setHasChanges(false);
       toast({
         title: "Gespeichert",
-        description: "Die Änderungen wurden gespeichert.",
+        description: "Alle Änderungen wurden gespeichert.",
       });
     } catch (error) {
       console.error("Error saving CMS content:", error);
@@ -142,6 +260,106 @@ export function CMSEditor() {
     } finally {
       setIsSaving(false);
     }
+  }
+
+  function renderBlockEditor(blockKey: string, block: { key: string; label: string; description: string; fields: string[] }) {
+    const data = formData[blockKey] || defaultData[blockKey];
+    if (!data) return null;
+
+    return (
+      <Card key={blockKey}>
+        <CardHeader>
+          <CardTitle>{block.label}</CardTitle>
+          <CardDescription>{block.description}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {block.fields.includes("title") && (
+            <div className="space-y-2">
+              <Label htmlFor={`${blockKey}-title`}>Überschrift</Label>
+              <Input
+                id={`${blockKey}-title`}
+                value={data.title}
+                onChange={(e) => handleInputChange(blockKey, "title", e.target.value)}
+                placeholder="Überschrift eingeben..."
+              />
+            </div>
+          )}
+
+          {block.fields.includes("subtitle") && (
+            <div className="space-y-2">
+              <Label htmlFor={`${blockKey}-subtitle`}>Untertitel / Beschreibung</Label>
+              <Textarea
+                id={`${blockKey}-subtitle`}
+                value={data.subtitle}
+                onChange={(e) => handleInputChange(blockKey, "subtitle", e.target.value)}
+                placeholder="Beschreibung eingeben..."
+                rows={3}
+              />
+            </div>
+          )}
+
+          {block.fields.includes("content") && (
+            <div className="space-y-2">
+              <Label htmlFor={`${blockKey}-content`}>Inhalt</Label>
+              <Textarea
+                id={`${blockKey}-content`}
+                value={data.content}
+                onChange={(e) => handleInputChange(blockKey, "content", e.target.value)}
+                placeholder="Inhalt eingeben..."
+                rows={5}
+              />
+            </div>
+          )}
+
+          {(block.fields.includes("cta_text") || block.fields.includes("cta_link")) && (
+            <div className="grid gap-4 md:grid-cols-2">
+              {block.fields.includes("cta_text") && (
+                <div className="space-y-2">
+                  <Label htmlFor={`${blockKey}-cta-text`}>Button-Text</Label>
+                  <Input
+                    id={`${blockKey}-cta-text`}
+                    value={data.cta_text}
+                    onChange={(e) => handleInputChange(blockKey, "cta_text", e.target.value)}
+                    placeholder="z.B. Mehr erfahren"
+                  />
+                </div>
+              )}
+
+              {block.fields.includes("cta_link") && (
+                <div className="space-y-2">
+                  <Label htmlFor={`${blockKey}-cta-link`}>Button-Link</Label>
+                  <Input
+                    id={`${blockKey}-cta-link`}
+                    value={data.cta_link}
+                    onChange={(e) => handleInputChange(blockKey, "cta_link", e.target.value)}
+                    placeholder="z.B. /ueber-uns"
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Preview */}
+          <div className="mt-6 p-4 rounded-lg bg-muted/50 border">
+            <p className="text-xs text-muted-foreground mb-3">Vorschau</p>
+            <h3 className="font-display text-xl font-bold text-foreground mb-2">
+              {data.title}
+            </h3>
+            {data.subtitle && (
+              <p className="text-muted-foreground text-sm mb-2">{data.subtitle}</p>
+            )}
+            {data.content && (
+              <p className="text-muted-foreground text-sm mb-2">{data.content}</p>
+            )}
+            {data.cta_text && (
+              <Button size="sm" disabled className="mt-2">
+                {data.cta_text} →
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   if (isLoading) {
@@ -172,83 +390,42 @@ export function CMSEditor() {
         </div>
       </div>
 
-      {/* Hero Section Editor */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Hero-Bereich</CardTitle>
-          <CardDescription>
-            Der Hero-Bereich ist das erste, was Besucher auf der Startseite sehen
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="hero-title">Hauptüberschrift</Label>
-            <Input
-              id="hero-title"
-              value={heroFormData.title}
-              onChange={(e) => handleInputChange("title", e.target.value)}
-              placeholder="Überschrift eingeben..."
-            />
-          </div>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="home" className="flex items-center gap-2">
+            <Home className="h-4 w-4" />
+            <span className="hidden sm:inline">Startseite</span>
+          </TabsTrigger>
+          <TabsTrigger value="ueberuns" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            <span className="hidden sm:inline">Über uns</span>
+          </TabsTrigger>
+          <TabsTrigger value="kalender" className="flex items-center gap-2">
+            <Calendar className="h-4 w-4" />
+            <span className="hidden sm:inline">Kalender</span>
+          </TabsTrigger>
+          <TabsTrigger value="foerderung" className="flex items-center gap-2">
+            <Euro className="h-4 w-4" />
+            <span className="hidden sm:inline">Förderung</span>
+          </TabsTrigger>
+        </TabsList>
 
-          <div className="space-y-2">
-            <Label htmlFor="hero-subtitle">Unterüberschrift</Label>
-            <Textarea
-              id="hero-subtitle"
-              value={heroFormData.subtitle}
-              onChange={(e) => handleInputChange("subtitle", e.target.value)}
-              placeholder="Beschreibung eingeben..."
-              rows={3}
-            />
-          </div>
+        <TabsContent value="home" className="space-y-6 mt-6">
+          {pageBlocks.home.map((block) => renderBlockEditor(block.key, block))}
+        </TabsContent>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="hero-cta-text">Button-Text</Label>
-              <Input
-                id="hero-cta-text"
-                value={heroFormData.cta_text}
-                onChange={(e) => handleInputChange("cta_text", e.target.value)}
-                placeholder="z.B. Mehr erfahren"
-              />
-            </div>
+        <TabsContent value="ueberuns" className="space-y-6 mt-6">
+          {pageBlocks.ueberuns.map((block) => renderBlockEditor(block.key, block))}
+        </TabsContent>
 
-            <div className="space-y-2">
-              <Label htmlFor="hero-cta-link">Button-Link</Label>
-              <Input
-                id="hero-cta-link"
-                value={heroFormData.cta_link}
-                onChange={(e) => handleInputChange("cta_link", e.target.value)}
-                placeholder="z.B. /ueber-uns"
-              />
-            </div>
-          </div>
+        <TabsContent value="kalender" className="space-y-6 mt-6">
+          {pageBlocks.kalender.map((block) => renderBlockEditor(block.key, block))}
+        </TabsContent>
 
-          {/* Preview */}
-          <div className="mt-6 p-6 rounded-lg bg-muted/50 border">
-            <p className="text-xs text-muted-foreground mb-4">Vorschau</p>
-            <h3 className="font-display text-2xl font-bold text-foreground mb-2">
-              {heroFormData.title}
-            </h3>
-            <p className="text-muted-foreground mb-4">
-              {heroFormData.subtitle}
-            </p>
-            <Button size="sm" disabled>
-              {heroFormData.cta_text} →
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Future CMS blocks can be added here */}
-      <Card className="border-dashed">
-        <CardHeader>
-          <CardTitle className="text-muted-foreground">Weitere Blöcke</CardTitle>
-          <CardDescription>
-            Zusätzliche bearbeitbare Bereiche können hier hinzugefügt werden (z.B. Footer, Über uns, etc.)
-          </CardDescription>
-        </CardHeader>
-      </Card>
+        <TabsContent value="foerderung" className="space-y-6 mt-6">
+          {pageBlocks.foerderung.map((block) => renderBlockEditor(block.key, block))}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
