@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
 const heroImages = [
-  "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=1200&h=800&fit=crop",
-  "https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?w=1200&h=800&fit=crop",
-  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1200&h=800&fit=crop",
+  "https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?w=1400&h=900&fit=crop",
+  "https://images.unsplash.com/photo-1478147427282-58a87a120781?w=1400&h=900&fit=crop",
+  "https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?w=1400&h=900&fit=crop",
 ];
 
 const stats = [
