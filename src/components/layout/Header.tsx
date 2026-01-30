@@ -105,6 +105,12 @@ export default function Header() {
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuItem asChild>
+                        <Link to="/mitgliederbereich" className="cursor-pointer">
+                          <User className="mr-2 h-4 w-4" />
+                          Mitgliederbereich
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
                         <Link to="/ressourcen/eintragen" className="cursor-pointer">
                           Ressource eintragen
                         </Link>
@@ -192,6 +198,12 @@ export default function Header() {
                             </Link>
                           </Button>
                         )}
+                        <Button variant="outline" className="w-full mb-2" asChild>
+                          <Link to="/mitgliederbereich" onClick={() => setMobileMenuOpen(false)}>
+                            <User className="mr-2 h-4 w-4" />
+                            Mitgliederbereich
+                          </Link>
+                        </Button>
                         <Button variant="outline" className="w-full" asChild>
                           <Link to="/ressourcen/eintragen" onClick={() => setMobileMenuOpen(false)}>
                             Ressource eintragen
