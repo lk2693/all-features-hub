@@ -1,7 +1,9 @@
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight, Users, Calendar, Folder, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 
 const stats = [
   { label: "Mitglieder", value: "120+", icon: Users },
@@ -9,7 +11,50 @@ const stats = [
   { label: "Ressourcen", value: "80+", icon: Folder },
 ];
 
+interface HeroContent {
+  title: string;
+  subtitle: string;
+  cta_text: string;
+  cta_link: string;
+}
+
+const defaultContent: HeroContent = {
+  title: "Gemeinsam für eine lebendige Kulturszene",
+  subtitle: "Der Kulturrat Braunschweig vernetzt Kulturschaffende, bietet Ressourcen und setzt sich für die Interessen der lokalen Kulturszene ein.",
+  cta_text: "Mehr erfahren",
+  cta_link: "/ueber-uns",
+};
+
 export default function HeroSection() {
+  const [content, setContent] = useState<HeroContent>(defaultContent);
+
+  useEffect(() => {
+    async function fetchHeroContent() {
+      try {
+        const { data, error } = await supabase
+          .from("cms_content")
+          .select("title, subtitle, cta_text, cta_link")
+          .eq("block_key", "hero")
+          .maybeSingle();
+
+        if (error) throw error;
+        
+        if (data) {
+          setContent({
+            title: data.title || defaultContent.title,
+            subtitle: data.subtitle || defaultContent.subtitle,
+            cta_text: data.cta_text || defaultContent.cta_text,
+            cta_link: data.cta_link || defaultContent.cta_link,
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching hero content:", error);
+      }
+    }
+
+    fetchHeroContent();
+  }, []);
+
   return (
     <section className="relative overflow-hidden bg-gradient-section pb-16 pt-12 lg:pb-24 lg:pt-20">
       {/* Background decoration */}
@@ -33,12 +78,12 @@ export default function HeroSection() {
             </div>
             
             <h1 className="font-display text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-              Gemeinsam für eine{" "}
-              <span className="text-gradient">lebendige Kulturszene</span>
+              {content.title.split(" ").slice(0, 3).join(" ")}{" "}
+              <span className="text-gradient">{content.title.split(" ").slice(3).join(" ")}</span>
             </h1>
             
             <p className="mt-6 text-lg text-muted-foreground leading-relaxed max-w-xl mx-auto lg:mx-0">
-              Der Kulturrat Braunschweig vernetzt Kulturschaffende, bietet Ressourcen und setzt sich für die Interessen der lokalen Kulturszene ein.
+              {content.subtitle}
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
@@ -49,7 +94,7 @@ export default function HeroSection() {
                 </Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
-                <Link to="/ueber-uns">Mehr erfahren</Link>
+                <Link to={content.cta_link}>{content.cta_text}</Link>
               </Button>
             </div>
 

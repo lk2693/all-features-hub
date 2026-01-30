@@ -17,6 +17,7 @@ import Impressum from "./pages/Impressum";
 import Datenschutz from "./pages/Datenschutz";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
+import NewsDetail from "./pages/NewsDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
             <Route path="/admin" element={<Admin />} />
             <Route path="/ueber-uns" element={<UeberUns />} />
             <Route path="/news" element={<News />} />
+            <Route path="/news/:slug" element={<NewsDetail />} />
             <Route path="/kalender" element={<Kalender />} />
             <Route path="/ressourcen" element={<Ressourcen />} />
             <Route path="/ressourcen/eintragen" element={<RessourcenEintragen />} />
