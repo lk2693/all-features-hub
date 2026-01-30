@@ -3,6 +3,7 @@ import Layout from "@/components/layout/Layout";
 import { Users, Target, FileText, Heart } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCMSContent } from "@/hooks/useCMSContent";
+import ExpandingHero from "@/components/ueber-uns/ExpandingHero";
 
 const vorstand = [
   { name: "Dr. Maria Schmidt", role: "1. Vorsitzende", bereich: "Bildende Kunst" },
@@ -12,29 +13,12 @@ const vorstand = [
 ];
 
 export default function UeberUns() {
-  const { content: heroContent } = useCMSContent("ueberuns_hero");
   const { content: missionContent } = useCMSContent("ueberuns_mission");
 
   return (
     <Layout>
-      {/* Hero */}
-      <section className="py-16 lg:py-24 bg-gradient-section">
-        <div className="container">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="max-w-3xl"
-          >
-            <h1 className="font-display text-4xl font-bold text-foreground sm:text-5xl">
-              {heroContent.title}
-            </h1>
-            <p className="mt-6 text-lg text-muted-foreground leading-relaxed">
-              {heroContent.subtitle}
-            </p>
-          </motion.div>
-        </div>
-      </section>
+      {/* Expanding Hero with rotating images */}
+      <ExpandingHero />
 
       {/* Mission & Leitbild */}
       <section className="py-16 lg:py-24 bg-background" id="leitbild">
