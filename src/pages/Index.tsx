@@ -1,5 +1,5 @@
 import Layout from "@/components/layout/Layout";
-import HeroSection from "@/components/home/HeroSection";
+import ExpandingHero from "@/components/home/ExpandingHero";
 import FeaturesSection from "@/components/home/FeaturesSection";
 import NewsSection from "@/components/home/NewsSection";
 import CalendarPreview from "@/components/home/CalendarPreview";
@@ -9,7 +9,7 @@ import CTASection from "@/components/home/CTASection";
 export default function Index() {
   return (
     <Layout>
-      <HeroSection />
+      <ExpandingHero />
       <FeaturesSection />
       <NewsSection />
       <CalendarPreview />
