@@ -8,6 +8,7 @@ import { NewsManager } from "@/components/admin/NewsManager";
 import { CMSEditor } from "@/components/admin/CMSEditor";
 import { ResourcesManager } from "@/components/admin/ResourcesManager";
 import { BestPracticesManager } from "@/components/admin/BestPracticesManager";
+import { EventsManager } from "@/components/admin/EventsManager";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, ShieldAlert } from "lucide-react";
 
@@ -76,6 +77,9 @@ export default function Admin() {
           </TabsContent>
           <TabsContent value="news">
             <NewsManager />
+          </TabsContent>
+          <TabsContent value="events">
+            <EventsManager />
           </TabsContent>
           <TabsContent value="best-practices">
             <BestPracticesManager />

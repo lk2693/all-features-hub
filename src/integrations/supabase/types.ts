@@ -110,6 +110,60 @@ export type Database = {
         }
         Relationships: []
       }
+      events: {
+        Row: {
+          category: string
+          cover_image_url: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          end_date: string | null
+          id: string
+          is_all_day: boolean
+          is_published: boolean
+          location: string | null
+          organizer: string | null
+          start_date: string
+          title: string
+          updated_at: string
+          website_url: string | null
+        }
+        Insert: {
+          category?: string
+          cover_image_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_all_day?: boolean
+          is_published?: boolean
+          location?: string | null
+          organizer?: string | null
+          start_date: string
+          title: string
+          updated_at?: string
+          website_url?: string | null
+        }
+        Update: {
+          category?: string
+          cover_image_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_all_day?: boolean
+          is_published?: boolean
+          location?: string | null
+          organizer?: string | null
+          start_date?: string
+          title?: string
+          updated_at?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
       news_posts: {
         Row: {
           author_id: string | null
