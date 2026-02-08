@@ -1,19 +1,57 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Layout from "@/components/layout/Layout";
-import { Users, Target, FileText, Heart } from "lucide-react";
+import { Users, Target, FileText, Heart, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCMSContent } from "@/hooks/useCMSContent";
+import { supabase } from "@/integrations/supabase/client";
 
-const vorstand = [
-  { name: "Dr. Maria Schmidt", role: "1. Vorsitzende", bereich: "Bildende Kunst" },
-  { name: "Thomas Müller", role: "2. Vorsitzender", bereich: "Musik" },
-  { name: "Julia Weber", role: "Schatzmeisterin", bereich: "Theater" },
-  { name: "Michael Braun", role: "Schriftführer", bereich: "Literatur" },
-];
+interface VorstandMember {
+  id: string;
+  name: string;
+  role: string;
+  bereich: string;
+  bio: string | null;
+  image_url: string | null;
+  email: string | null;
+}
 
 export default function UeberUns() {
   const { content: heroContent } = useCMSContent("ueberuns_hero");
   const { content: missionContent } = useCMSContent("ueberuns_mission");
+  const [vorstand, setVorstand] = useState<VorstandMember[]>([]);
+  const [isLoadingVorstand, setIsLoadingVorstand] = useState(true);
+
+  useEffect(() => {
+    async function fetchVorstand() {
+      try {
+        const { data, error } = await supabase
+          .from("vorstand_members")
+          .select("*")
+          .eq("is_active", true)
+          .order("sort_order", { ascending: true });
+
+        if (error) throw error;
+        setVorstand((data || []) as unknown as VorstandMember[]);
+      } catch (error) {
+        console.error("Error fetching vorstand:", error);
+      } finally {
+        setIsLoadingVorstand(false);
+      }
+    }
+
+    fetchVorstand();
+  }, []);
+
+  function getInitials(name: string) {
+    return name
+      .split(" ")
+      .map(n => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  }
 
   return (
     <Layout>
@@ -117,28 +155,44 @@ export default function UeberUns() {
           </motion.div>
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {vorstand.map((person, index) => (
-              <motion.div
-                key={person.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-              >
-                <Card className="text-center border-border/50">
-                  <CardHeader>
-                    <div className="w-20 h-20 rounded-full bg-gradient-hero mx-auto flex items-center justify-center mb-4">
-                      <Users className="h-10 w-10 text-primary-foreground" />
-                    </div>
-                    <CardTitle className="font-display text-lg">{person.name}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <p className="font-medium text-primary">{person.role}</p>
-                    <p className="text-sm text-muted-foreground mt-1">{person.bereich}</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
+            {isLoadingVorstand ? (
+              <div className="col-span-full flex justify-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : vorstand.length === 0 ? (
+              <div className="col-span-full text-center py-8 text-muted-foreground">
+                Keine Vorstandsmitglieder gefunden.
+              </div>
+            ) : (
+              vorstand.map((person, index) => (
+                <motion.div
+                  key={person.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                >
+                  <Card className="text-center border-border/50 h-full">
+                    <CardHeader>
+                      <Avatar className="w-24 h-24 mx-auto mb-4">
+                        <AvatarImage src={person.image_url || undefined} alt={person.name} />
+                        <AvatarFallback className="bg-gradient-hero text-primary-foreground text-2xl">
+                          {getInitials(person.name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <CardTitle className="font-display text-lg">{person.name}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <p className="font-medium text-primary">{person.role}</p>
+                      <p className="text-sm text-muted-foreground mt-1">{person.bereich}</p>
+                      {person.bio && (
+                        <p className="text-sm text-muted-foreground mt-3 line-clamp-3">{person.bio}</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))
+            )}
           </div>
         </div>
       </section>

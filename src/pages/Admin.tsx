@@ -10,6 +10,7 @@ import { ResourcesManager } from "@/components/admin/ResourcesManager";
 import { BestPracticesManager } from "@/components/admin/BestPracticesManager";
 import { EventsManager } from "@/components/admin/EventsManager";
 import { StatisticsManager } from "@/components/admin/StatisticsManager";
+import { VorstandManager } from "@/components/admin/VorstandManager";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, ShieldAlert } from "lucide-react";
 
@@ -87,6 +88,9 @@ export default function Admin() {
           </TabsContent>
           <TabsContent value="best-practices">
             <BestPracticesManager />
+          </TabsContent>
+          <TabsContent value="vorstand">
+            <VorstandManager />
           </TabsContent>
           <TabsContent value="cms">
             <CMSEditor />

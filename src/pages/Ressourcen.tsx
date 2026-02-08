@@ -29,6 +29,7 @@ interface Resource {
   provider_email: string;
   location: string;
   is_available: boolean;
+  image_url: string | null;
 }
 
 const getCategoryIcon = (categoryId: string) => {
@@ -50,7 +51,7 @@ export default function Ressourcen() {
     setIsLoading(true);
     const { data, error } = await supabase
       .from("resources")
-      .select("id, title, description, category, provider_name, provider_email, location, is_available")
+      .select("id, title, description, category, provider_name, provider_email, location, is_available, image_url")
       .eq("is_approved", true)
       .order("created_at", { ascending: false });
 
@@ -168,20 +169,40 @@ export default function Ressourcen() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: index * 0.08 }}
                   >
-                    <Card className="h-full flex flex-col border-border/50 hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300 group">
-                      <CardHeader className="pb-3">
-                        <div className="flex items-start justify-between gap-4 mb-3">
-                          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                            <IconComponent className="h-5 w-5 text-primary" />
-                          </div>
+                    <Card className="h-full flex flex-col border-border/50 hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300 group overflow-hidden">
+                      {resource.image_url && (
+                        <div className="relative h-40 overflow-hidden">
+                          <img 
+                            src={resource.image_url} 
+                            alt={resource.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
                           <Badge 
                             variant={resource.is_available ? "default" : "secondary"}
                             className={cn(
+                              "absolute top-3 right-3",
                               resource.is_available ? "bg-secondary text-secondary-foreground" : "bg-muted text-muted-foreground"
                             )}
                           >
                             {resource.is_available ? "Verfügbar" : "Ausgeliehen"}
                           </Badge>
+                        </div>
+                      )}
+                      <CardHeader className="pb-3">
+                        <div className="flex items-start justify-between gap-4 mb-3">
+                          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                            <IconComponent className="h-5 w-5 text-primary" />
+                          </div>
+                          {!resource.image_url && (
+                            <Badge 
+                              variant={resource.is_available ? "default" : "secondary"}
+                              className={cn(
+                                resource.is_available ? "bg-secondary text-secondary-foreground" : "bg-muted text-muted-foreground"
+                              )}
+                            >
+                              {resource.is_available ? "Verfügbar" : "Ausgeliehen"}
+                            </Badge>
+                          )}
                         </div>
                         <CardTitle className="font-display text-lg group-hover:text-primary transition-colors">
                           {resource.title}

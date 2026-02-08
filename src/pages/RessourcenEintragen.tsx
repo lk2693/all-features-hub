@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { useNavigate, Link } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
-import { ArrowLeft, Send, Monitor, Home, Lightbulb, Music, Camera, Wrench, CheckCircle, LogIn } from "lucide-react";
+import { ArrowLeft, Send, Monitor, Home, Lightbulb, Music, Camera, Wrench, CheckCircle, LogIn, Upload, X, Loader2, ImageIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 import { cn } from "@/lib/utils";
@@ -79,9 +80,13 @@ export default function RessourcenEintragen() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, isLoading: authLoading } = useAuth();
+  const { isAdmin } = useIsAdmin();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
+  const [imageUrl, setImageUrl] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   
   const [formData, setFormData] = useState<ResourceFormData>({
     title: "",
@@ -113,6 +118,66 @@ export default function RessourcenEintragen() {
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
+  };
+
+  const handleImageUpload = async (file: File) => {
+    if (!file) return;
+    
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Fehler",
+        description: "Bitte wähle eine Bilddatei aus.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "Fehler",
+        description: "Das Bild darf maximal 5MB groß sein.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsUploading(true);
+    
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `resource-${Date.now()}.${fileExt}`;
+      const filePath = `resources/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('cms-images')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('cms-images')
+        .getPublicUrl(filePath);
+
+      setImageUrl(publicUrl);
+
+      toast({
+        title: "Hochgeladen",
+        description: "Das Bild wurde erfolgreich hochgeladen.",
+      });
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      toast({
+        title: "Fehler",
+        description: "Bild konnte nicht hochgeladen werden.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const removeImage = () => {
+    setImageUrl("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -151,6 +216,7 @@ export default function RessourcenEintragen() {
 
     setIsSubmitting(true);
 
+    // Admins get auto-approved resources
     const { error } = await supabase.from("resources").insert({
       title: formData.title,
       description: formData.description,
@@ -160,8 +226,9 @@ export default function RessourcenEintragen() {
       provider_phone: formData.providerPhone || null,
       location: formData.location,
       conditions: formData.conditions || null,
+      image_url: imageUrl || null,
       submitted_by: user.id,
-      is_approved: false,
+      is_approved: isAdmin,
       is_available: true,
     });
 
@@ -179,8 +246,10 @@ export default function RessourcenEintragen() {
     setIsSuccess(true);
 
     toast({
-      title: "Ressource eingereicht! ✓",
-      description: "Wir prüfen deinen Eintrag und schalten ihn bald frei.",
+      title: isAdmin ? "Ressource veröffentlicht! ✓" : "Ressource eingereicht! ✓",
+      description: isAdmin 
+        ? "Die Ressource ist jetzt öffentlich sichtbar." 
+        : "Wir prüfen deinen Eintrag und schalten ihn bald frei.",
     });
   };
 
@@ -261,6 +330,7 @@ export default function RessourcenEintragen() {
                 </Button>
                 <Button variant="outline" onClick={() => {
                   setIsSuccess(false);
+                  setImageUrl("");
                   setFormData({
                     title: "",
                     description: "",
@@ -396,6 +466,60 @@ export default function RessourcenEintragen() {
                       <p className="text-sm text-destructive">{errors.description}</p>
                     )}
                     <p className="text-xs text-muted-foreground">{formData.description.length}/500 Zeichen</p>
+                  </div>
+
+                  {/* Image Upload */}
+                  <div className="space-y-2">
+                    <Label>Bild (optional)</Label>
+                    {imageUrl ? (
+                      <div className="relative rounded-lg overflow-hidden border border-border">
+                        <img 
+                          src={imageUrl} 
+                          alt="Ressourcen-Vorschau" 
+                          className="w-full h-48 object-cover"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute top-2 right-2"
+                          onClick={removeImage}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div 
+                        className="border-2 border-dashed border-border rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors"
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        {isUploading ? (
+                          <div className="flex flex-col items-center gap-2">
+                            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                            <p className="text-sm text-muted-foreground">Wird hochgeladen...</p>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-center gap-2">
+                            <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+                              <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                            </div>
+                            <p className="text-sm font-medium">Bild hochladen</p>
+                            <p className="text-xs text-muted-foreground">PNG, JPG oder WebP bis 5MB</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      ref={fileInputRef}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleImageUpload(file);
+                        e.target.value = '';
+                      }}
+                    />
                   </div>
 
                   {/* Location */}

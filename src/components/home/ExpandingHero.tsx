@@ -5,7 +5,7 @@ import { ArrowRight, Users, Calendar, Folder, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
-const heroImages = [
+const defaultHeroImages = [
   "https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?w=1400&h=900&fit=crop",
   "https://images.unsplash.com/photo-1478147427282-58a87a120781?w=1400&h=900&fit=crop",
   "https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?w=1400&h=900&fit=crop",
@@ -22,6 +22,7 @@ interface HeroContent {
   subtitle: string;
   cta_text: string;
   cta_link: string;
+  image_url: string | null;
 }
 
 const defaultContent: HeroContent = {
@@ -29,10 +30,12 @@ const defaultContent: HeroContent = {
   subtitle: "Der Kulturrat Braunschweig vernetzt Kulturschaffende, bietet Ressourcen und setzt sich für die Interessen der lokalen Kulturszene ein.",
   cta_text: "Mehr erfahren",
   cta_link: "/ueber-uns",
+  image_url: null,
 };
 
 export default function ExpandingHero() {
   const [content, setContent] = useState<HeroContent>(defaultContent);
+  const [heroImages, setHeroImages] = useState<string[]>(defaultHeroImages);
   const [isExpanded, setIsExpanded] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -42,7 +45,7 @@ export default function ExpandingHero() {
       try {
         const { data, error } = await supabase
           .from("cms_content")
-          .select("title, subtitle, cta_text, cta_link")
+          .select("title, subtitle, cta_text, cta_link, image_url")
           .eq("block_key", "hero")
           .maybeSingle();
 
@@ -54,7 +57,13 @@ export default function ExpandingHero() {
             subtitle: data.subtitle || defaultContent.subtitle,
             cta_text: data.cta_text || defaultContent.cta_text,
             cta_link: data.cta_link || defaultContent.cta_link,
+            image_url: data.image_url || null,
           });
+          
+          // Wenn ein CMS-Bild vorhanden ist, verwende nur dieses
+          if (data.image_url) {
+            setHeroImages([data.image_url]);
+          }
         }
       } catch (error) {
         console.error("Error fetching hero content:", error);
