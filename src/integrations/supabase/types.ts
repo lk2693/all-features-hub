@@ -273,7 +273,6 @@ export type Database = {
           created_at: string
           description: string
           id: string
-          image_url: string | null
           is_approved: boolean
           is_available: boolean
           location: string
@@ -290,7 +289,6 @@ export type Database = {
           created_at?: string
           description: string
           id?: string
-          image_url?: string | null
           is_approved?: boolean
           is_available?: boolean
           location: string
@@ -307,7 +305,6 @@ export type Database = {
           created_at?: string
           description?: string
           id?: string
-          image_url?: string | null
           is_approved?: boolean
           is_available?: boolean
           location?: string
@@ -338,48 +335,6 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
-        }
-        Relationships: []
-      }
-      vorstand_members: {
-        Row: {
-          id: string
-          name: string
-          role: string
-          bereich: string
-          bio: string | null
-          image_url: string | null
-          email: string | null
-          sort_order: number
-          is_active: boolean
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          role: string
-          bereich: string
-          bio?: string | null
-          image_url?: string | null
-          email?: string | null
-          sort_order?: number
-          is_active?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          role?: string
-          bereich?: string
-          bio?: string | null
-          image_url?: string | null
-          email?: string | null
-          sort_order?: number
-          is_active?: boolean
-          created_at?: string
-          updated_at?: string
         }
         Relationships: []
       }
