@@ -338,6 +338,48 @@ export type Database = {
         }
         Relationships: []
       }
+      vorstand_members: {
+        Row: {
+          bereich: string
+          bio: string | null
+          created_at: string | null
+          email: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          name: string
+          role: string
+          sort_order: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          bereich: string
+          bio?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          name: string
+          role: string
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          bereich?: string
+          bio?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          name?: string
+          role?: string
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
