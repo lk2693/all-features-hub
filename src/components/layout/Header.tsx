@@ -90,7 +90,7 @@ export default function Header() {
               </p>
               <p className={cn(
                 "text-[10px] uppercase tracking-[0.2em] font-medium transition-colors",
-                scrolled || !isHome ? "text-muted-foreground" : "text-primary-foreground/60"
+                scrolled || !isHome ? "text-muted-foreground" : "text-white/70"
               )}>
                 Braunschweig
               </p>
