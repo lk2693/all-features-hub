@@ -79,7 +79,16 @@ export default function ExpandingHero() {
   const lastPart = words.slice(3).join(" ");
 
   return (
-    <section ref={containerRef} className="relative h-[100vh] overflow-hidden">
+    <motion.section
+      ref={containerRef}
+      className="relative overflow-hidden"
+      initial={{ height: 0, opacity: 0 }}
+      animate={{ height: "100vh", opacity: 1 }}
+      transition={{
+        height: { duration: 1, ease: [0.4, 0, 0.2, 1] },
+        opacity: { duration: 0.6, delay: 0.3 },
+      }}
+    >
       {/* Parallax background */}
       <motion.div style={{ y, scale }} className="absolute inset-0">
         {currentMedia?.type === "video" ? (
