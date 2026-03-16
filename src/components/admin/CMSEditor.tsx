@@ -175,6 +175,13 @@ export function CMSEditor() {
             cta_text: item.cta_text || defaultData[item.block_key]?.cta_text || "",
             cta_link: item.cta_link || defaultData[item.block_key]?.cta_link || "",
           };
+          // Load hero media from metadata
+          if (item.block_key === "hero" && item.metadata) {
+            const meta = item.metadata as Record<string, unknown>;
+            if (Array.isArray(meta.media)) {
+              setHeroMedia(meta.media as MediaItem[]);
+            }
+          }
         });
       }
 
