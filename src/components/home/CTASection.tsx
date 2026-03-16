@@ -1,8 +1,9 @@
-import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight, Users, Mail } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useRef } from "react";
+
+import ctaImage from "@/assets/cta-kulturszene.jpg";
 
 export default function CTASection() {
   const ref = useRef<HTMLDivElement>(null);
@@ -10,99 +11,92 @@ export default function CTASection() {
     target: ref,
     offset: ["start end", "end start"],
   });
-  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "-15%"]);
-  const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0.9, 1, 1]);
+  const imgScale = useTransform(scrollYProgress, [0, 1], [1.15, 1]);
+  const imgY = useTransform(scrollYProgress, [0, 1], ["0%", "10%"]);
 
   return (
-    <section ref={ref} className="py-24 lg:py-36 relative overflow-hidden">
-      {/* Parallax background */}
-      <motion.div
-        style={{ y: bgY }}
-        className="absolute inset-0 bg-tertiary"
-      >
-        {/* Abstract shapes */}
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
-          className="absolute -top-1/2 -right-1/4 w-[800px] h-[800px] rounded-full border border-primary/10"
-        />
-        <motion.div
-          animate={{ rotate: -360 }}
-          transition={{ duration: 80, repeat: Infinity, ease: "linear" }}
-          className="absolute -bottom-1/2 -left-1/4 w-[600px] h-[600px] rounded-full border border-accent/10"
-        />
-        <div className="absolute top-1/4 left-1/3 w-96 h-96 rounded-full bg-primary/5 blur-[100px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-accent/5 blur-[100px]" />
-      </motion.div>
+    <section ref={ref} className="py-24 lg:py-36 bg-background">
+      <div className="container">
+        <div className="relative rounded-[2rem] overflow-hidden min-h-[600px] lg:min-h-[700px] flex items-end">
+          {/* Background image with parallax */}
+          <motion.img
+            src={ctaImage}
+            alt="Kulturfestival in der Stadt"
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ scale: imgScale, y: imgY }}
+          />
 
-      <div className="container relative z-10">
-        <motion.div
-          style={{ scale }}
-          className="max-w-4xl mx-auto text-center"
-        >
-          <motion.h2
-            className="font-display text-4xl sm:text-5xl lg:text-7xl font-bold text-tertiary-foreground tracking-tight"
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
-            Werde Teil der{" "}
-            <span className="text-gradient">Kulturszene</span>
-          </motion.h2>
+          {/* Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-foreground via-foreground/60 to-foreground/10" />
 
-          <motion.p
-            className="mt-8 text-xl text-tertiary-foreground/60 leading-relaxed max-w-2xl mx-auto"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-          >
-            Der Kulturrat lebt vom Engagement seiner Mitglieder. Bring dich ein,
-            vernetze dich und gestalte Kulturpolitik mit.
-          </motion.p>
-
-          <motion.div
-            className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-          >
-            <Button
-              size="lg"
-              className="bg-gradient-hero hover:opacity-90 group text-lg px-8 py-6"
-              asChild
+          {/* Content */}
+          <div className="relative z-10 p-8 sm:p-12 lg:p-16 w-full max-w-3xl">
+            <motion.span
+              className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase bg-primary/90 text-primary-foreground mb-6"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
             >
-              <Link to="/mitmachen">
-                <Users className="mr-2 h-5 w-5" />
+              Jetzt mitmachen
+            </motion.span>
+
+            <motion.h2
+              className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-background tracking-tight leading-[1.1]"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, delay: 0.1 }}
+            >
+              Werde Teil der Kulturszene
+            </motion.h2>
+
+            <motion.p
+              className="mt-5 text-lg sm:text-xl text-background/70 leading-relaxed max-w-xl"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, delay: 0.25 }}
+            >
+              Der Kulturrat lebt vom Engagement seiner Mitglieder. Bring dich ein,
+              vernetze dich und gestalte Kulturpolitik mit.
+            </motion.p>
+
+            <motion.div
+              className="mt-10 flex flex-col sm:flex-row items-start gap-4"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, delay: 0.4 }}
+            >
+              <Link
+                to="/mitmachen"
+                className="group inline-flex items-center gap-2 px-7 py-4 rounded-full bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 transition-colors"
+              >
+                <Users className="h-4 w-4" />
                 Mitglied werden
-                <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-tertiary-foreground/20 text-tertiary-foreground hover:bg-tertiary-foreground/10 text-lg px-8 py-6"
-              asChild
-            >
-              <Link to="/kontakt">
-                <Mail className="mr-2 h-5 w-5" />
+              <Link
+                to="/kontakt"
+                className="inline-flex items-center gap-2 px-7 py-4 rounded-full border border-background/30 text-background font-semibold text-sm hover:bg-background/10 transition-colors"
+              >
+                <Mail className="h-4 w-4" />
                 Kontakt aufnehmen
               </Link>
-            </Button>
-          </motion.div>
+            </motion.div>
 
-          <motion.p
-            className="mt-10 text-sm text-tertiary-foreground/40"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.8 }}
-          >
-            Kostenlose Mitgliedschaft für Einzelpersonen. Institutionen auf Anfrage.
-          </motion.p>
-        </motion.div>
+            <motion.p
+              className="mt-8 text-xs text-background/40"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.7 }}
+            >
+              Kostenlose Mitgliedschaft für Einzelpersonen · Institutionen auf Anfrage
+            </motion.p>
+          </div>
+        </div>
       </div>
     </section>
   );
