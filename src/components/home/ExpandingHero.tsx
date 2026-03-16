@@ -102,13 +102,14 @@ export default function ExpandingHero() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Rotate images
+  // Rotate media
   useEffect(() => {
+    if (heroMedia.length <= 1) return;
     const interval = setInterval(() => {
-      setCurrentImageIndex((prev) => (prev + 1) % heroImages.length);
+      setCurrentImageIndex((prev) => (prev + 1) % heroMedia.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [heroMedia.length]);
 
   return (
     <section className="relative overflow-hidden">
