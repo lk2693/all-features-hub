@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Instagram, Youtube, Mail, MapPin } from "lucide-react";
+import { Instagram, Youtube, Mail, MapPin, ArrowUpRight } from "lucide-react";
 import { useCookieConsent } from "@/contexts/CookieConsentContext";
 import { NewsletterSignup } from "@/components/NewsletterSignup";
 
@@ -42,15 +42,18 @@ export default function Footer() {
   const { resetConsent } = useCookieConsent();
 
   return (
-    <footer className="border-t border-border bg-tertiary text-tertiary-foreground">
-      {/* Newsletter Section */}
-      <div className="border-b border-tertiary-foreground/10">
-        <div className="container py-12">
-          <div className="flex flex-col items-center gap-6 text-center lg:flex-row lg:justify-between lg:text-left">
-            <div>
-              <h3 className="font-display text-2xl font-semibold">Newsletter abonnieren</h3>
-              <p className="mt-1 text-tertiary-foreground/70">
-                Bleib auf dem Laufenden über Kulturpolitik, Förderungen und Veranstaltungen.
+    <footer className="bg-foreground text-background">
+      {/* Newsletter Band */}
+      <div className="border-b border-background/10">
+        <div className="container py-14 lg:py-16">
+          <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+            <div className="max-w-md">
+              <h3 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">
+                Bleib in der{" "}
+                <span className="text-primary">Szene</span>
+              </h3>
+              <p className="mt-3 text-background/50 text-sm leading-relaxed">
+                Kulturpolitik, Förderungen und Veranstaltungen – direkt in dein Postfach.
               </p>
             </div>
             <NewsletterSignup className="w-full max-w-md" />
@@ -59,32 +62,32 @@ export default function Footer() {
       </div>
 
       {/* Main Footer */}
-      <div className="container py-12 lg:py-16">
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-5">
-          {/* Brand Column */}
+      <div className="container py-14 lg:py-20">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
+          {/* Brand */}
           <div className="lg:col-span-1">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-hero">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary">
                 <span className="font-display text-lg font-bold text-primary-foreground">K</span>
               </div>
               <div>
-                <p className="font-display text-lg font-semibold">Kulturrat</p>
-                <p className="text-xs text-tertiary-foreground/70">Braunschweig</p>
+                <p className="font-display text-lg font-bold">Kulturrat</p>
+                <p className="text-xs text-background/40">Braunschweig</p>
               </div>
             </div>
-            <p className="mt-4 text-sm text-tertiary-foreground/70 leading-relaxed">
-              Die Stimme der Kulturschaffenden in Braunschweig. Netzwerk, Interessenvertretung und Ressourcenplattform.
+            <p className="mt-5 text-sm text-background/40 leading-relaxed">
+              Die Stimme der Kulturschaffenden in Braunschweig.
             </p>
-            <div className="mt-6 flex gap-3">
+            <div className="mt-6 flex gap-2">
               {socialLinks.map((item) => (
                 <a
                   key={item.name}
                   href={item.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex h-10 w-10 items-center justify-center rounded-lg bg-tertiary-foreground/10 text-tertiary-foreground/70 transition-colors hover:bg-primary hover:text-primary-foreground"
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-background/10 text-background/50 transition-all duration-300 hover:border-primary hover:bg-primary hover:text-primary-foreground"
                 >
-                  <item.icon className="h-5 w-5" />
+                  <item.icon className="h-4 w-4" />
                   <span className="sr-only">{item.name}</span>
                 </a>
               ))}
@@ -92,99 +95,53 @@ export default function Footer() {
           </div>
 
           {/* Link Columns */}
-          <div>
-            <h4 className="font-display font-semibold text-sm uppercase tracking-wider text-tertiary-foreground/50 mb-4">
-              Kulturrat
-            </h4>
-            <ul className="space-y-3">
-              {footerLinks.kulturrat.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    to={link.href}
-                    className="text-sm text-tertiary-foreground/70 hover:text-tertiary-foreground transition-colors"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-display font-semibold text-sm uppercase tracking-wider text-tertiary-foreground/50 mb-4">
-              Angebote
-            </h4>
-            <ul className="space-y-3">
-              {footerLinks.angebote.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    to={link.href}
-                    className="text-sm text-tertiary-foreground/70 hover:text-tertiary-foreground transition-colors"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-display font-semibold text-sm uppercase tracking-wider text-tertiary-foreground/50 mb-4">
-              Mitmachen
-            </h4>
-            <ul className="space-y-3">
-              {footerLinks.mitmachen.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    to={link.href}
-                    className="text-sm text-tertiary-foreground/70 hover:text-tertiary-foreground transition-colors"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-display font-semibold text-sm uppercase tracking-wider text-tertiary-foreground/50 mb-4">
-              Rechtliches
-            </h4>
-            <ul className="space-y-3">
-              {footerLinks.rechtliches.map((link) => (
-                <li key={link.name}>
-                  {"isCookieSettings" in link && link.isCookieSettings ? (
-                    <button
-                      onClick={resetConsent}
-                      className="text-sm text-tertiary-foreground/70 hover:text-tertiary-foreground transition-colors text-left"
-                    >
-                      {link.name}
-                    </button>
-                  ) : (
-                    <Link
-                      to={link.href}
-                      className="text-sm text-tertiary-foreground/70 hover:text-tertiary-foreground transition-colors"
-                    >
-                      {link.name}
-                    </Link>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
+          {Object.entries({
+            Kulturrat: footerLinks.kulturrat,
+            Angebote: footerLinks.angebote,
+            Mitmachen: footerLinks.mitmachen,
+            Rechtliches: footerLinks.rechtliches,
+          }).map(([title, links]) => (
+            <div key={title}>
+              <h4 className="font-display font-semibold text-xs uppercase tracking-[0.15em] text-background/30 mb-5">
+                {title}
+              </h4>
+              <ul className="space-y-3">
+                {links.map((link) => (
+                  <li key={link.name}>
+                    {"isCookieSettings" in link && link.isCookieSettings ? (
+                      <button
+                        onClick={resetConsent}
+                        className="text-sm text-background/50 hover:text-background transition-colors duration-200 text-left"
+                      >
+                        {link.name}
+                      </button>
+                    ) : (
+                      <Link
+                        to={link.href}
+                        className="group inline-flex items-center gap-1 text-sm text-background/50 hover:text-background transition-colors duration-200"
+                      >
+                        {link.name}
+                        <ArrowUpRight className="h-3 w-3 opacity-0 -translate-y-0.5 translate-x-0.5 group-hover:opacity-100 group-hover:translate-y-0 group-hover:translate-x-0 transition-all duration-200" />
+                      </Link>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
       </div>
 
       {/* Bottom Bar */}
-      <div className="border-t border-tertiary-foreground/10">
-        <div className="container py-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-tertiary-foreground/50">
-          <p>© 2025 Kulturrat Braunschweig e.V. Alle Rechte vorbehalten.</p>
-          <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1">
-              <MapPin className="h-4 w-4" />
-              Braunschweig
-            </span>
-          </div>
+      <div className="border-t border-background/10">
+        <div className="container py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-background/30">
+            © {new Date().getFullYear()} Kulturrat Braunschweig e.V.
+          </p>
+          <span className="flex items-center gap-1.5 text-xs text-background/30">
+            <MapPin className="h-3 w-3" />
+            Braunschweig, Deutschland
+          </span>
         </div>
       </div>
     </footer>
