@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
-import { Users, Target, FileText, Heart, Loader2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Target, FileText, Heart, Loader2, ArrowRight, Download, Handshake, Eye, Users2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCMSContent } from "@/hooks/useCMSContent";
 import { supabase } from "@/integrations/supabase/client";
+import ueberUnsHero from "@/assets/ueberuns-hero.jpg";
 
 interface VorstandMember {
   id: string;
@@ -16,6 +17,29 @@ interface VorstandMember {
   image_url: string | null;
   email: string | null;
 }
+
+const leitbildItems = [
+  {
+    icon: Heart,
+    title: "Kultur ist unverzichtbar",
+    text: "Kultur ist ein unverzichtbarer Teil unserer Gesellschaft",
+  },
+  {
+    icon: Users2,
+    title: "Vielfalt & Inklusion",
+    text: "Vielfalt und Inklusion prägen unser Handeln",
+  },
+  {
+    icon: Eye,
+    title: "Transparenz & Partizipation",
+    text: "Transparenz und Partizipation sind unsere Grundprinzipien",
+  },
+  {
+    icon: Handshake,
+    title: "Kooperation",
+    text: "Kooperation geht vor Konkurrenz",
+  },
+];
 
 export default function UeberUns() {
   const { content: heroContent } = useCMSContent("ueberuns_hero");
@@ -40,156 +64,188 @@ export default function UeberUns() {
         setIsLoadingVorstand(false);
       }
     }
-
     fetchVorstand();
   }, []);
 
   function getInitials(name: string) {
-    return name
-      .split(" ")
-      .map(n => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
+    return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
   }
 
   return (
     <Layout>
-      {/* Hero */}
-      <section className="py-16 lg:py-24 bg-gradient-section">
-        <div className="container">
-          <motion.div
+      {/* Hero – full-width image with overlay */}
+      <section className="relative min-h-[70vh] flex items-end overflow-hidden">
+        <img
+          src={ueberUnsHero}
+          alt="Kulturrat Braunschweig Team"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-foreground via-foreground/50 to-foreground/10" />
+
+        <div className="container relative z-10 pb-16 pt-40">
+          <motion.span
+            className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase bg-primary/90 text-primary-foreground mb-6"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="max-w-3xl"
+            transition={{ duration: 0.5 }}
           >
-            <h1 className="font-display text-4xl font-bold text-foreground sm:text-5xl">
-              {heroContent.title}
-            </h1>
-            <p className="mt-6 text-lg text-muted-foreground leading-relaxed">
-              {heroContent.subtitle}
-            </p>
-          </motion.div>
+            Über uns
+          </motion.span>
+          <motion.h1
+            className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-background tracking-tight max-w-3xl leading-[1.1]"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+          >
+            {heroContent.title}
+          </motion.h1>
+          <motion.p
+            className="mt-5 text-lg text-background/70 leading-relaxed max-w-2xl"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.25 }}
+          >
+            {heroContent.subtitle}
+          </motion.p>
         </div>
       </section>
 
-      {/* Mission & Leitbild */}
-      <section className="py-16 lg:py-24 bg-background" id="leitbild">
+      {/* Mission */}
+      <section className="py-24 lg:py-32 bg-background" id="leitbild">
         <div className="container">
-          <div className="grid gap-8 lg:grid-cols-2">
+          <div className="grid gap-16 lg:grid-cols-2 lg:gap-20">
+            {/* Mission text */}
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
+              transition={{ duration: 0.7 }}
             >
-              <Card className="h-full border-border/50">
-                <CardHeader>
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-                    <Target className="h-6 w-6 text-primary" />
-                  </div>
-                  <CardTitle className="font-display text-2xl">{missionContent.title}</CardTitle>
-                </CardHeader>
-                <CardContent className="text-muted-foreground leading-relaxed space-y-4">
-                  <p>{missionContent.content}</p>
-                </CardContent>
-              </Card>
+              <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase bg-primary/10 text-primary mb-5">
+                Mission
+              </span>
+              <h2 className="font-display text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
+                {missionContent.title}
+              </h2>
+              <p className="mt-6 text-muted-foreground leading-relaxed text-lg">
+                {missionContent.content}
+              </p>
+              <Link
+                to="/mitmachen"
+                className="group inline-flex items-center gap-2 mt-8 text-sm font-semibold text-primary hover:text-primary/80 transition-colors"
+              >
+                Mitglied werden
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Link>
             </motion.div>
 
+            {/* Leitbild grid */}
             <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.1 }}
+              transition={{ duration: 0.7, delay: 0.15 }}
+              className="grid grid-cols-1 sm:grid-cols-2 gap-5"
             >
-              <Card className="h-full border-border/50">
-                <CardHeader>
-                  <div className="w-12 h-12 rounded-xl bg-accent/20 flex items-center justify-center mb-4">
-                    <Heart className="h-6 w-6 text-accent-foreground" />
+              {leitbildItems.map((item, i) => (
+                <motion.div
+                  key={item.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: 0.1 + i * 0.08 }}
+                  className="p-6 rounded-2xl border border-border/50 bg-card hover:border-primary/30 hover:shadow-glow transition-all duration-300"
+                >
+                  <div className="p-2.5 rounded-xl bg-primary/10 w-fit mb-4">
+                    <item.icon className="h-5 w-5 text-primary" />
                   </div>
-                  <CardTitle className="font-display text-2xl">Leitbild</CardTitle>
-                </CardHeader>
-                <CardContent className="text-muted-foreground leading-relaxed">
-                  <ul className="space-y-3">
-                    <li className="flex items-start gap-3">
-                      <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0" />
-                      <span>Kultur ist ein unverzichtbarer Teil unserer Gesellschaft</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0" />
-                      <span>Vielfalt und Inklusion prägen unser Handeln</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0" />
-                      <span>Transparenz und Partizipation sind unsere Grundprinzipien</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0" />
-                      <span>Kooperation geht vor Konkurrenz</span>
-                    </li>
-                  </ul>
-                </CardContent>
-              </Card>
+                  <h3 className="font-display text-sm font-bold text-foreground mb-1.5">
+                    {item.title}
+                  </h3>
+                  <p className="text-muted-foreground text-sm leading-relaxed">
+                    {item.text}
+                  </p>
+                </motion.div>
+              ))}
             </motion.div>
           </div>
         </div>
       </section>
 
       {/* Vorstand */}
-      <section className="py-16 lg:py-24 bg-gradient-section" id="vorstand">
+      <section className="py-24 lg:py-32 bg-muted/30" id="vorstand">
         <div className="container">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-12"
+            transition={{ duration: 0.7 }}
+            className="mb-14"
           >
-            <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
+            <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase bg-primary/10 text-primary mb-5">
+              Team
+            </span>
+            <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground tracking-tight">
               Unser Vorstand
             </h2>
-            <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-              Ehrenamtlich engagiert für die Kulturszene Braunschweigs
+            <p className="mt-4 text-lg text-muted-foreground max-w-xl">
+              Ehrenamtlich engagiert für die Kulturszene Braunschweigs.
             </p>
           </motion.div>
 
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {isLoadingVorstand ? (
-              <div className="col-span-full flex justify-center py-8">
+              <div className="col-span-full flex justify-center py-12">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : vorstand.length === 0 ? (
-              <div className="col-span-full text-center py-8 text-muted-foreground">
+              <div className="col-span-full text-center py-12 text-muted-foreground">
                 Keine Vorstandsmitglieder gefunden.
               </div>
             ) : (
               vorstand.map((person, index) => (
                 <motion.div
                   key={person.id}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 25 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  transition={{ duration: 0.5, delay: index * 0.08 }}
+                  className="group relative rounded-2xl overflow-hidden bg-card border border-border/50 hover:border-primary/30 hover:shadow-glow transition-all duration-300"
                 >
-                  <Card className="text-center border-border/50 h-full">
-                    <CardHeader>
-                      <Avatar className="w-24 h-24 mx-auto mb-4">
-                        <AvatarImage src={person.image_url || undefined} alt={person.name} />
-                        <AvatarFallback className="bg-gradient-hero text-primary-foreground text-2xl">
+                  {/* Avatar area */}
+                  <div className="aspect-[4/3] bg-muted/50 flex items-center justify-center overflow-hidden">
+                    {person.image_url ? (
+                      <img
+                        src={person.image_url}
+                        alt={person.name}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <Avatar className="w-24 h-24">
+                        <AvatarFallback className="bg-primary/10 text-primary text-2xl font-display font-bold">
                           {getInitials(person.name)}
                         </AvatarFallback>
                       </Avatar>
-                      <CardTitle className="font-display text-lg">{person.name}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                      <p className="font-medium text-primary">{person.role}</p>
-                      <p className="text-sm text-muted-foreground mt-1">{person.bereich}</p>
-                      {person.bio && (
-                        <p className="text-sm text-muted-foreground mt-3 line-clamp-3">{person.bio}</p>
-                      )}
-                    </CardContent>
-                  </Card>
+                    )}
+                  </div>
+
+                  {/* Info */}
+                  <div className="p-5">
+                    <h3 className="font-display text-lg font-bold text-foreground">
+                      {person.name}
+                    </h3>
+                    <p className="text-primary text-sm font-medium mt-0.5">
+                      {person.role}
+                    </p>
+                    <p className="text-muted-foreground text-xs mt-1">
+                      {person.bereich}
+                    </p>
+                    {person.bio && (
+                      <p className="text-muted-foreground text-sm mt-3 line-clamp-2 leading-relaxed">
+                        {person.bio}
+                      </p>
+                    )}
+                  </div>
                 </motion.div>
               ))
             )}
@@ -198,43 +254,41 @@ export default function UeberUns() {
       </section>
 
       {/* Satzung */}
-      <section className="py-16 lg:py-24 bg-background" id="satzung">
+      <section className="py-24 lg:py-32 bg-background" id="satzung">
         <div className="container">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="max-w-3xl mx-auto"
+            transition={{ duration: 0.7 }}
+            className="max-w-2xl mx-auto text-center"
           >
-            <Card className="border-border/50">
-              <CardHeader className="text-center">
-                <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center mx-auto mb-4">
-                  <FileText className="h-6 w-6 text-secondary-foreground" />
-                </div>
-                <CardTitle className="font-display text-2xl">Satzung & Geschäftsordnung</CardTitle>
-              </CardHeader>
-              <CardContent className="text-center">
-                <p className="text-muted-foreground mb-6">
-                  Die Satzung und Geschäftsordnung des Kulturrat Braunschweig e.V. regeln 
-                  unsere Arbeitsweise und Entscheidungsprozesse.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <a 
-                    href="#" 
-                    className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity"
-                  >
-                    Satzung (PDF)
-                  </a>
-                  <a 
-                    href="#" 
-                    className="inline-flex items-center justify-center rounded-lg border border-border px-6 py-3 text-sm font-medium text-foreground hover:bg-muted transition-colors"
-                  >
-                    Geschäftsordnung (PDF)
-                  </a>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="p-3 rounded-2xl bg-secondary/50 w-fit mx-auto mb-6">
+              <FileText className="h-6 w-6 text-secondary-foreground" />
+            </div>
+            <h2 className="font-display text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
+              Satzung & Geschäftsordnung
+            </h2>
+            <p className="mt-4 text-muted-foreground leading-relaxed">
+              Die Satzung und Geschäftsordnung des Kulturrat Braunschweig e.V. regeln
+              unsere Arbeitsweise und Entscheidungsprozesse.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center mt-8">
+              <a
+                href="#"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-foreground text-background px-7 py-3.5 text-sm font-semibold hover:bg-foreground/90 transition-colors"
+              >
+                <Download className="h-4 w-4" />
+                Satzung (PDF)
+              </a>
+              <a
+                href="#"
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-border px-7 py-3.5 text-sm font-semibold text-foreground hover:bg-muted transition-colors"
+              >
+                <Download className="h-4 w-4" />
+                Geschäftsordnung (PDF)
+              </a>
+            </div>
           </motion.div>
         </div>
       </section>
