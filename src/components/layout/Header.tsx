@@ -84,7 +84,7 @@ export default function Header() {
             <div className="hidden sm:block">
               <p className={cn(
                 "font-display text-lg font-bold transition-colors",
-                scrolled || !isHome ? "text-foreground" : "text-primary-foreground"
+                scrolled || !isHome ? "text-foreground" : "text-white"
               )}>
                 Kulturrat
               </p>
