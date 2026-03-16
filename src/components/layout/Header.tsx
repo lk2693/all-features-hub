@@ -133,7 +133,7 @@ export default function Header() {
                 "ml-2 flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm transition-all",
                 scrolled || !isHome
                   ? "border-border/50 text-muted-foreground hover:border-border hover:text-foreground"
-                  : "border-primary-foreground/20 text-primary-foreground/60 hover:border-primary-foreground/40 hover:text-primary-foreground"
+                  : "border-white/30 text-white/70 hover:border-white/50 hover:text-white"
               )}
             >
               <Search className="h-3.5 w-3.5" />
