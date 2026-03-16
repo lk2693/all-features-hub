@@ -84,13 +84,13 @@ export default function Header() {
             <div className="hidden sm:block">
               <p className={cn(
                 "font-display text-lg font-bold transition-colors",
-                scrolled || !isHome ? "text-foreground" : "text-primary-foreground"
+                scrolled || !isHome ? "text-foreground" : "text-white"
               )}>
                 Kulturrat
               </p>
               <p className={cn(
                 "text-[10px] uppercase tracking-[0.2em] font-medium transition-colors",
-                scrolled || !isHome ? "text-muted-foreground" : "text-primary-foreground/60"
+                scrolled || !isHome ? "text-muted-foreground" : "text-white/70"
               )}>
                 Braunschweig
               </p>
@@ -108,10 +108,10 @@ export default function Header() {
                   className={cn(
                     "relative px-4 py-2 text-sm font-medium transition-colors rounded-lg",
                     isActive
-                      ? scrolled || !isHome ? "text-primary" : "text-primary-foreground"
+                      ? scrolled || !isHome ? "text-primary" : "text-white font-semibold"
                       : scrolled || !isHome
                         ? "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                        : "text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10"
+                        : "text-white/80 hover:text-white hover:bg-white/10"
                   )}
                 >
                   {item.name}
@@ -133,14 +133,14 @@ export default function Header() {
                 "ml-2 flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm transition-all",
                 scrolled || !isHome
                   ? "border-border/50 text-muted-foreground hover:border-border hover:text-foreground"
-                  : "border-primary-foreground/20 text-primary-foreground/60 hover:border-primary-foreground/40 hover:text-primary-foreground"
+                  : "border-white/30 text-white/70 hover:border-white/50 hover:text-white"
               )}
             >
               <Search className="h-3.5 w-3.5" />
               <span className="text-xs hidden xl:inline">Suche</span>
               <kbd className={cn(
                 "hidden xl:inline text-[10px] px-1.5 py-0.5 rounded font-mono",
-                scrolled || !isHome ? "bg-muted" : "bg-primary-foreground/10"
+                scrolled || !isHome ? "bg-muted" : "bg-white/10"
               )}>⌘K</kbd>
             </button>
           </div>
@@ -157,7 +157,7 @@ export default function Header() {
                         size="sm"
                         className={cn(
                           "gap-2 rounded-full",
-                          scrolled || !isHome ? "" : "text-primary-foreground hover:bg-primary-foreground/10"
+                          scrolled || !isHome ? "" : "text-white hover:bg-white/10"
                         )}
                       >
                         <div className="w-7 h-7 rounded-full bg-gradient-hero flex items-center justify-center">
@@ -202,7 +202,7 @@ export default function Header() {
                       size="sm"
                       asChild
                       className={cn(
-                        scrolled || !isHome ? "" : "text-primary-foreground hover:bg-primary-foreground/10"
+                        scrolled || !isHome ? "" : "text-white hover:bg-white/10"
                       )}
                     >
                       <Link to="/auth">Anmelden</Link>
@@ -231,7 +231,7 @@ export default function Header() {
                 "p-2.5 rounded-lg transition-colors",
                 scrolled || !isHome
                   ? "text-muted-foreground hover:bg-muted"
-                  : "text-primary-foreground/70 hover:bg-primary-foreground/10"
+                  : "text-white/80 hover:bg-white/10"
               )}
             >
               <Search className="h-5 w-5" />
@@ -242,7 +242,7 @@ export default function Header() {
                 "p-2.5 rounded-lg transition-colors",
                 scrolled || !isHome
                   ? "text-foreground hover:bg-muted"
-                  : "text-primary-foreground hover:bg-primary-foreground/10"
+                  : "text-white hover:bg-white/10"
               )}
             >
               <AnimatePresence mode="wait" initial={false}>
