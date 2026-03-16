@@ -1,9 +1,15 @@
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useRef } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowRight, Users, Calendar, Folder, Heart } from "lucide-react";
+import { ArrowRight, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+
+interface MediaItem {
+  type: "image" | "video";
+  url: string;
+}
 
 const defaultHeroImages = [
   "https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?w=1400&h=900&fit=crop",
@@ -11,252 +17,200 @@ const defaultHeroImages = [
   "https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?w=1400&h=900&fit=crop",
 ];
 
-const stats = [
-  { label: "Mitglieder", value: "120+", icon: Users },
-  { label: "Veranstaltungen/Jahr", value: "50+", icon: Calendar },
-  { label: "Ressourcen", value: "80+", icon: Folder },
-];
-
-interface MediaItem {
-  type: "image" | "video";
-  url: string;
-}
-
-interface HeroContent {
-  title: string;
-  subtitle: string;
-  cta_text: string;
-  cta_link: string;
-  image_url: string | null;
-  media: MediaItem[];
-}
-
-const defaultContent: HeroContent = {
-  title: "Gemeinsam für eine lebendige Kulturszene",
-  subtitle: "Der Kulturrat Braunschweig vernetzt Kulturschaffende, bietet Ressourcen und setzt sich für die Interessen der lokalen Kulturszene ein.",
-  cta_text: "Mehr erfahren",
-  cta_link: "/ueber-uns",
-  image_url: null,
-  media: [],
-};
-
 export default function ExpandingHero() {
-  const [content, setContent] = useState<HeroContent>(defaultContent);
-  const [heroMedia, setHeroMedia] = useState<MediaItem[]>(
-    defaultHeroImages.map(url => ({ type: "image" as const, url }))
-  );
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end start"],
+  });
 
-  // Fetch CMS content
+  const y = useTransform(scrollYProgress, [0, 1], ["0%", "40%"]);
+  const scale = useTransform(scrollYProgress, [0, 1], [1, 1.15]);
+  const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+  const textY = useTransform(scrollYProgress, [0, 1], ["0%", "60%"]);
+
+  const [heroMedia, setHeroMedia] = useState<MediaItem[]>(
+    defaultHeroImages.map((url) => ({ type: "image" as const, url }))
+  );
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [title, setTitle] = useState("Gemeinsam für eine lebendige Kulturszene");
+  const [subtitle, setSubtitle] = useState(
+    "Der Kulturrat Braunschweig vernetzt Kulturschaffende, bietet Ressourcen und setzt sich für die Interessen der lokalen Kulturszene ein."
+  );
+
   useEffect(() => {
-    async function fetchHeroContent() {
+    async function fetchHero() {
       try {
-        const { data, error } = await supabase
+        const { data } = await supabase
           .from("cms_content")
-          .select("title, subtitle, cta_text, cta_link, image_url, metadata")
+          .select("title, subtitle, image_url, metadata")
           .eq("block_key", "hero")
           .maybeSingle();
-
-        if (error) throw error;
-        
         if (data) {
-          // Parse media from metadata
-          let media: MediaItem[] = [];
-          if (data.metadata && typeof data.metadata === "object" && !Array.isArray(data.metadata)) {
-            const meta = data.metadata as Record<string, unknown>;
-            if (Array.isArray(meta.media)) {
-              media = meta.media as MediaItem[];
-            }
-          }
-
-          setContent({
-            title: data.title || defaultContent.title,
-            subtitle: data.subtitle || defaultContent.subtitle,
-            cta_text: data.cta_text || defaultContent.cta_text,
-            cta_link: data.cta_link || defaultContent.cta_link,
-            image_url: data.image_url || null,
-            media,
-          });
-          
-          // Use media from metadata, fallback to single image_url, then defaults
-          if (media.length > 0) {
-            setHeroMedia(media);
+          if (data.title) setTitle(data.title);
+          if (data.subtitle) setSubtitle(data.subtitle);
+          const meta = data.metadata as Record<string, unknown> | null;
+          if (meta && Array.isArray(meta.media) && meta.media.length > 0) {
+            setHeroMedia(meta.media as MediaItem[]);
           } else if (data.image_url) {
             setHeroMedia([{ type: "image", url: data.image_url }]);
           }
         }
-      } catch (error) {
-        console.error("Error fetching hero content:", error);
+      } catch (e) {
+        console.error(e);
       }
     }
-
-    fetchHeroContent();
+    fetchHero();
   }, []);
 
-  // Trigger expansion on mount
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsExpanded(true);
-    }, 100);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Rotate media
   useEffect(() => {
     if (heroMedia.length <= 1) return;
     const interval = setInterval(() => {
-      setCurrentImageIndex((prev) => (prev + 1) % heroMedia.length);
+      setCurrentIndex((p) => (p + 1) % heroMedia.length);
     }, 5000);
     return () => clearInterval(interval);
   }, [heroMedia.length]);
 
-  return (
-    <section className="relative overflow-hidden">
-      {/* Expanding container */}
-      <motion.div
-        initial={{ height: 0, opacity: 0 }}
-        animate={{ 
-          height: isExpanded ? "auto" : 0,
-          opacity: isExpanded ? 1 : 0
-        }}
-        transition={{ 
-          height: { duration: 0.8, ease: [0.4, 0, 0.2, 1] },
-          opacity: { duration: 0.6, delay: 0.2 }
-        }}
-        className="relative min-h-[70vh] lg:min-h-[80vh]"
-      >
-        {/* Background media with crossfade */}
-        <div className="absolute inset-0">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentImageIndex}
-              initial={{ opacity: 0, scale: 1.1 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 1.2, ease: "easeInOut" }}
-              className="absolute inset-0"
-            >
-              {heroMedia[currentImageIndex]?.type === "video" ? (
-                <video
-                  src={heroMedia[currentImageIndex].url}
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <img
-                  src={heroMedia[currentImageIndex]?.url}
-                  alt=""
-                  className="w-full h-full object-cover"
-                />
-              )}
-            </motion.div>
-          </AnimatePresence>
-          
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-background/30" />
-          <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/50 to-transparent" />
-        </div>
+  const currentMedia = heroMedia[currentIndex];
 
-        {/* Content */}
-        <div className="container relative z-10 flex items-center min-h-[70vh] lg:min-h-[80vh] py-16 lg:py-24">
+  // Split title for gradient effect on last words
+  const words = title.split(" ");
+  const firstPart = words.slice(0, 3).join(" ");
+  const lastPart = words.slice(3).join(" ");
+
+  return (
+    <section ref={containerRef} className="relative h-[100vh] overflow-hidden">
+      {/* Parallax background */}
+      <motion.div style={{ y, scale }} className="absolute inset-0">
+        {currentMedia?.type === "video" ? (
+          <video
+            key={currentMedia.url}
+            src={currentMedia.url}
+            autoPlay muted loop playsInline
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <motion.img
+            key={currentMedia?.url}
+            src={currentMedia?.url}
+            alt=""
+            className="w-full h-full object-cover"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1 }}
+          />
+        )}
+      </motion.div>
+
+      {/* Dramatic overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-foreground/95 via-foreground/40 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-r from-foreground/60 via-transparent to-transparent" />
+
+      {/* Content with parallax */}
+      <motion.div
+        style={{ y: textY, opacity }}
+        className="absolute inset-0 flex items-end pb-20 lg:pb-28"
+      >
+        <div className="container">
           <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: isExpanded ? 1 : 0, y: isExpanded ? 0 : 40 }}
-            transition={{ duration: 0.8, delay: 0.5, ease: [0.4, 0, 0.2, 1] }}
-            className="max-w-3xl"
+            initial={{ opacity: 0, y: 60 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.3, ease: [0.25, 0.1, 0, 1] }}
           >
-            <motion.div 
-              className="inline-flex items-center gap-2 rounded-full bg-primary/10 backdrop-blur-sm px-4 py-1.5 text-sm font-medium text-primary mb-6"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: isExpanded ? 1 : 0, y: isExpanded ? 0 : 20 }}
+            <motion.div
+              className="inline-flex items-center gap-2 rounded-full bg-primary/20 backdrop-blur-md border border-primary/30 px-5 py-2 text-sm font-medium text-primary-foreground mb-8"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 0.6 }}
             >
               <Heart className="h-4 w-4" />
               Für die Kultur in Braunschweig
             </motion.div>
 
-            <motion.h1 
-              className="font-display text-4xl font-bold text-foreground sm:text-5xl lg:text-6xl"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: isExpanded ? 1 : 0, y: isExpanded ? 0 : 20 }}
-              transition={{ duration: 0.6, delay: 0.7 }}
+            <h1 className="font-display text-5xl sm:text-6xl lg:text-8xl font-bold text-primary-foreground leading-[0.95] tracking-tight max-w-5xl">
+              <motion.span
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.5 }}
+                className="block"
+              >
+                {firstPart}
+              </motion.span>
+              {lastPart && (
+                <motion.span
+                  initial={{ opacity: 0, y: 40 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.7 }}
+                  className="block text-gradient"
+                >
+                  {lastPart}
+                </motion.span>
+              )}
+            </h1>
+
+            <motion.p
+              className="mt-8 text-lg lg:text-xl text-primary-foreground/70 leading-relaxed max-w-2xl"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.9 }}
             >
-              {content.title.split(" ").slice(0, 3).join(" ")}{" "}
-              <span className="text-gradient">
-                {content.title.split(" ").slice(3).join(" ")}
-              </span>
-            </motion.h1>
-            
-            <motion.p 
-              className="mt-6 text-lg lg:text-xl text-muted-foreground leading-relaxed max-w-2xl"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: isExpanded ? 1 : 0, y: isExpanded ? 0 : 20 }}
-              transition={{ duration: 0.6, delay: 0.9 }}
-            >
-              {content.subtitle}
+              {subtitle}
             </motion.p>
 
-            {/* CTA Buttons */}
-            <motion.div 
-              className="mt-8 flex flex-col sm:flex-row gap-4"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: isExpanded ? 1 : 0, y: isExpanded ? 0 : 20 }}
-              transition={{ duration: 0.6, delay: 1.1 }}
+            <motion.div
+              className="mt-10 flex flex-col sm:flex-row gap-4"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 1.1 }}
             >
-              <Button size="lg" className="bg-gradient-hero hover:opacity-90 group" asChild>
+              <Button size="lg" className="bg-gradient-hero hover:opacity-90 group text-lg px-8 py-6" asChild>
                 <Link to="/mitmachen">
                   Mitglied werden
-                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" className="backdrop-blur-sm" asChild>
-                <Link to={content.cta_link}>{content.cta_text}</Link>
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 backdrop-blur-sm text-lg px-8 py-6"
+                asChild
+              >
+                <Link to="/ueber-uns">Mehr erfahren</Link>
               </Button>
-            </motion.div>
-
-            {/* Stats */}
-            <motion.div 
-              className="mt-12 grid grid-cols-3 gap-6"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: isExpanded ? 1 : 0, y: isExpanded ? 0 : 20 }}
-              transition={{ duration: 0.6, delay: 1.3 }}
-            >
-              {stats.map((stat) => (
-                <div key={stat.label} className="text-center lg:text-left">
-                  <div className="flex items-center justify-center lg:justify-start gap-2 text-primary mb-1">
-                    <stat.icon className="h-5 w-5" />
-                    <span className="font-display text-2xl font-bold">{stat.value}</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground">{stat.label}</p>
-                </div>
-              ))}
             </motion.div>
           </motion.div>
         </div>
+      </motion.div>
 
-        {/* Image indicators */}
-        <motion.div 
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-10"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: isExpanded ? 1 : 0 }}
-          transition={{ delay: 1.5 }}
-        >
-          {heroMedia.map((item, index) => (
+      {/* Image indicators */}
+      {heroMedia.length > 1 && (
+        <div className="absolute bottom-8 right-8 flex gap-2 z-10">
+          {heroMedia.map((_, i) => (
             <button
-              key={index}
-              onClick={() => setCurrentImageIndex(index)}
-              className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                index === currentImageIndex 
-                  ? "bg-primary w-8" 
-                  : "bg-primary/30 hover:bg-primary/50"
+              key={i}
+              onClick={() => setCurrentIndex(i)}
+              className={`h-1 rounded-full transition-all duration-500 ${
+                i === currentIndex ? "bg-primary-foreground w-10" : "bg-primary-foreground/30 w-4 hover:bg-primary-foreground/60"
               }`}
-              aria-label={`${item.type === "video" ? "Video" : "Bild"} ${index + 1} anzeigen`}
+              aria-label={`Slide ${i + 1}`}
             />
           ))}
+        </div>
+      )}
+
+      {/* Scroll indicator */}
+      <motion.div
+        className="absolute bottom-8 left-1/2 -translate-x-1/2"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 2 }}
+      >
+        <motion.div
+          animate={{ y: [0, 8, 0] }}
+          transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+          className="w-6 h-10 rounded-full border-2 border-primary-foreground/30 flex items-start justify-center p-1.5"
+        >
+          <motion.div className="w-1.5 h-1.5 rounded-full bg-primary-foreground/60" />
         </motion.div>
       </motion.div>
     </section>
