@@ -52,24 +52,36 @@ export default function ExpandingHero() {
       try {
         const { data, error } = await supabase
           .from("cms_content")
-          .select("title, subtitle, cta_text, cta_link, image_url")
+          .select("title, subtitle, cta_text, cta_link, image_url, metadata")
           .eq("block_key", "hero")
           .maybeSingle();
 
         if (error) throw error;
         
         if (data) {
+          // Parse media from metadata
+          let media: MediaItem[] = [];
+          if (data.metadata && typeof data.metadata === "object" && !Array.isArray(data.metadata)) {
+            const meta = data.metadata as Record<string, unknown>;
+            if (Array.isArray(meta.media)) {
+              media = meta.media as MediaItem[];
+            }
+          }
+
           setContent({
             title: data.title || defaultContent.title,
             subtitle: data.subtitle || defaultContent.subtitle,
             cta_text: data.cta_text || defaultContent.cta_text,
             cta_link: data.cta_link || defaultContent.cta_link,
             image_url: data.image_url || null,
+            media,
           });
           
-          // Wenn ein CMS-Bild vorhanden ist, verwende nur dieses
-          if (data.image_url) {
-            setHeroImages([data.image_url]);
+          // Use media from metadata, fallback to single image_url, then defaults
+          if (media.length > 0) {
+            setHeroMedia(media);
+          } else if (data.image_url) {
+            setHeroMedia([{ type: "image", url: data.image_url }]);
           }
         }
       } catch (error) {
