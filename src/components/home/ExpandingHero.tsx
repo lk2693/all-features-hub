@@ -42,7 +42,9 @@ const defaultContent: HeroContent = {
 
 export default function ExpandingHero() {
   const [content, setContent] = useState<HeroContent>(defaultContent);
-  const [heroImages, setHeroImages] = useState<string[]>(defaultHeroImages);
+  const [heroMedia, setHeroMedia] = useState<MediaItem[]>(
+    defaultHeroImages.map(url => ({ type: "image" as const, url }))
+  );
   const [isExpanded, setIsExpanded] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
