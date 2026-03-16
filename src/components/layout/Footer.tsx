@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Instagram, Youtube, Mail, MapPin, ArrowUpRight } from "lucide-react";
 import { useCookieConsent } from "@/contexts/CookieConsentContext";
 import { NewsletterSignup } from "@/components/NewsletterSignup";
+import newsletterImage from "@/assets/newsletter-kultur.jpg";
 
 const footerLinks = {
   kulturrat: [
