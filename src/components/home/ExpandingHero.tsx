@@ -126,7 +126,7 @@ export default function ExpandingHero() {
         }}
         className="relative min-h-[70vh] lg:min-h-[80vh]"
       >
-        {/* Background images with crossfade */}
+        {/* Background media with crossfade */}
         <div className="absolute inset-0">
           <AnimatePresence mode="wait">
             <motion.div
@@ -137,11 +137,22 @@ export default function ExpandingHero() {
               transition={{ duration: 1.2, ease: "easeInOut" }}
               className="absolute inset-0"
             >
-              <img
-                src={heroImages[currentImageIndex]}
-                alt=""
-                className="w-full h-full object-cover"
-              />
+              {heroMedia[currentImageIndex]?.type === "video" ? (
+                <video
+                  src={heroMedia[currentImageIndex].url}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <img
+                  src={heroMedia[currentImageIndex]?.url}
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
+              )}
             </motion.div>
           </AnimatePresence>
           
