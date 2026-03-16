@@ -231,7 +231,7 @@ export default function Header() {
                 "p-2.5 rounded-lg transition-colors",
                 scrolled || !isHome
                   ? "text-muted-foreground hover:bg-muted"
-                  : "text-primary-foreground/70 hover:bg-primary-foreground/10"
+                  : "text-white/80 hover:bg-white/10"
               )}
             >
               <Search className="h-5 w-5" />
