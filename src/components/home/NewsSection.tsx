@@ -1,12 +1,10 @@
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useState, useRef } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { Skeleton } from "@/components/ui/skeleton";
 
 type NewsCategory = "news" | "foerderung" | "blog";
 
@@ -24,18 +22,19 @@ interface NewsPost {
   published_at: string | null;
   created_at: string;
   category: NewsCategory;
+  cover_image_url: string | null;
 }
 
-// Fallback data for when no news is in the database
 const fallbackNews: NewsPost[] = [
   {
     id: "1",
     title: "Neue Förderrichtlinien für Kulturprojekte 2025",
-    excerpt: "Die Stadt Braunschweig hat die neuen Förderrichtlinien veröffentlicht. Hier die wichtigsten Änderungen im Überblick.",
+    excerpt: "Die Stadt hat die neuen Förderrichtlinien veröffentlicht. Die wichtigsten Änderungen im Überblick.",
     slug: "neue-foerderrichtlinien-2025",
     published_at: new Date().toISOString(),
     created_at: new Date().toISOString(),
     category: "foerderung",
+    cover_image_url: null,
   },
   {
     id: "2",
@@ -45,161 +44,141 @@ const fallbackNews: NewsPost[] = [
     published_at: new Date().toISOString(),
     created_at: new Date().toISOString(),
     category: "news",
+    cover_image_url: null,
   },
   {
     id: "3",
     title: "Erfolgreiche Kooperation mit dem Staatstheater",
-    excerpt: "Das gemeinsame Projekt zur Nachwuchsförderung zeigt erste Erfolge. 15 junge Künstler:innen präsentieren ihre Arbeiten.",
+    excerpt: "Das gemeinsame Projekt zur Nachwuchsförderung zeigt erste Erfolge.",
     slug: "kooperation-staatstheater",
     published_at: new Date().toISOString(),
     created_at: new Date().toISOString(),
     category: "blog",
+    cover_image_url: null,
   },
 ];
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1 },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-};
-
-function formatDate(dateString: string): string {
-  return new Date(dateString).toLocaleDateString("de-DE", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
+function formatDate(d: string) {
+  return new Date(d).toLocaleDateString("de-DE", { day: "numeric", month: "short", year: "numeric" });
 }
 
 export default function NewsSection() {
   const [news, setNews] = useState<NewsPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start end", "end start"],
+  });
+  const parallaxY = useTransform(scrollYProgress, [0, 1], ["5%", "-5%"]);
 
   useEffect(() => {
     async function fetchNews() {
       try {
         const { data, error } = await supabase
           .from("news_posts")
-          .select("id, title, excerpt, slug, published_at, created_at, category")
+          .select("id, title, excerpt, slug, published_at, created_at, category, cover_image_url")
           .eq("is_published", true)
           .order("published_at", { ascending: false })
           .limit(3);
-
         if (error) throw error;
-        
-        // Use database news if available, otherwise use fallback
         setNews(data && data.length > 0 ? (data as NewsPost[]) : fallbackNews);
-      } catch (error) {
-        console.error("Error fetching news:", error);
+      } catch {
         setNews(fallbackNews);
       } finally {
         setIsLoading(false);
       }
     }
-
     fetchNews();
   }, []);
 
   return (
-    <section className="py-16 lg:py-24 bg-gradient-section">
+    <section ref={sectionRef} className="py-24 lg:py-36 bg-muted/30 overflow-hidden">
       <div className="container">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-12"
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8 }}
+          className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-16"
         >
           <div>
-            <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
+            <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground tracking-tight">
               Aktuelles
             </h2>
-            <p className="mt-2 text-lg text-muted-foreground">
-              Neuigkeiten aus der Braunschweiger Kulturszene
+            <p className="mt-4 text-xl text-muted-foreground">
+              Neuigkeiten aus der Kulturszene
             </p>
           </div>
-          <Button variant="outline" asChild className="shrink-0">
+          <Button variant="outline" size="lg" asChild className="shrink-0 group">
             <Link to="/news">
               Alle News
-              <ArrowRight className="ml-2 h-4 w-4" />
+              <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
           </Button>
         </motion.div>
 
-        {isLoading ? (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {[1, 2, 3].map((i) => (
-              <Card key={i} className="h-full flex flex-col">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between gap-4 mb-2">
-                    <Skeleton className="h-5 w-20" />
-                    <Skeleton className="h-4 w-24" />
-                  </div>
-                  <Skeleton className="h-6 w-full" />
-                  <Skeleton className="h-6 w-3/4" />
-                </CardHeader>
-                <CardContent className="flex-1">
-                  <Skeleton className="h-4 w-full mb-2" />
-                  <Skeleton className="h-4 w-full mb-2" />
-                  <Skeleton className="h-4 w-2/3" />
-                </CardContent>
-                <CardFooter className="pt-0">
-                  <Skeleton className="h-4 w-24" />
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
-          >
-            {news.map((item) => (
-              <motion.div key={item.id} variants={itemVariants}>
-                <Link to={`/news/${item.slug}`} className="block h-full group">
-                  <Card className="h-full flex flex-col transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1 border-border/50">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-center justify-between gap-4 mb-2">
-                        <Badge 
-                          variant={item.category === "news" ? "secondary" : "outline"}
+        {!isLoading && (
+          <motion.div style={{ y: parallaxY }} className="grid gap-6 lg:grid-cols-3">
+            {news.map((item, index) => (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.7, delay: index * 0.12 }}
+              >
+                <Link to={`/news/${item.slug}`} className="block group h-full">
+                  <motion.div
+                    whileHover={{ y: -6 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    className="h-full rounded-2xl border border-border/50 bg-card overflow-hidden hover:shadow-lg transition-shadow duration-300"
+                  >
+                    {/* Image area or color bar */}
+                    <div className="h-48 bg-gradient-to-br from-primary/10 via-accent/10 to-secondary overflow-hidden">
+                      {item.cover_image_url ? (
+                        <img
+                          src={item.cover_image_url}
+                          alt={item.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <span className="font-display text-7xl font-bold text-primary/10">
+                            {categoryLabels[item.category]?.[0] || "N"}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="p-6">
+                      <div className="flex items-center gap-3 mb-4">
+                        <Badge
+                          variant="outline"
                           className={
-                            item.category === "foerderung" ? "border-warning text-warning font-medium" : 
-                            item.category === "blog" ? "border-primary text-primary font-medium" : "font-medium"
+                            item.category === "foerderung"
+                              ? "border-warning text-warning"
+                              : item.category === "blog"
+                              ? "border-primary text-primary"
+                              : ""
                           }
                         >
                           {categoryLabels[item.category] || "News"}
                         </Badge>
-                        <span className="text-sm text-muted-foreground flex items-center gap-1.5">
-                          <Calendar className="h-3.5 w-3.5" />
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
                           {formatDate(item.published_at || item.created_at)}
                         </span>
                       </div>
-                      <h3 className="font-display text-lg font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2">
+
+                      <h3 className="font-display text-xl font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2 mb-3">
                         {item.title}
                       </h3>
-                    </CardHeader>
-                    <CardContent className="flex-1">
-                      <p className="text-muted-foreground text-sm line-clamp-3">
-                        {item.excerpt || "Lesen Sie mehr über diesen Beitrag..."}
+                      <p className="text-muted-foreground text-sm line-clamp-2">
+                        {item.excerpt || "Lesen Sie mehr..."}
                       </p>
-                    </CardContent>
-                    <CardFooter className="pt-0">
-                      <span className="text-sm font-medium text-primary flex items-center gap-1 group-hover:gap-2 transition-all">
-                        Weiterlesen
-                        <ArrowRight className="h-4 w-4" />
-                      </span>
-                    </CardFooter>
-                  </Card>
+                    </div>
+                  </motion.div>
                 </Link>
               </motion.div>
             ))}
