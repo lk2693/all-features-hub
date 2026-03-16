@@ -68,7 +68,7 @@ export default function Header() {
           "fixed top-0 left-0 right-0 z-50 transition-all duration-500",
           scrolled || !isHome
             ? "bg-background/80 backdrop-blur-xl border-b border-border/50 shadow-sm"
-            : "bg-transparent"
+            : "bg-gradient-to-b from-foreground/40 to-transparent backdrop-blur-[2px]"
         )}
       >
         <nav className="container flex h-16 items-center justify-between lg:h-20">
