@@ -141,6 +141,7 @@ export function CMSEditor() {
   const [activeTab, setActiveTab] = useState("home");
   const [uploadingFor, setUploadingFor] = useState<string | null>(null);
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+  const [heroMedia, setHeroMedia] = useState<MediaItem[]>([]);
 
   useEffect(() => {
     fetchCMSContent();
