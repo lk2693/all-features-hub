@@ -477,7 +477,12 @@ export function CMSEditor() {
             </div>
           )}
 
-          {block.fields.includes("image_url") && renderImageUpload(blockKey)}
+          {block.fields.includes("image_url") && blockKey === "hero" ? (
+            <HeroMediaManager
+              media={heroMedia}
+              onChange={(newMedia) => { setHeroMedia(newMedia); setHasChanges(true); }}
+            />
+          ) : block.fields.includes("image_url") ? renderImageUpload(blockKey) : null}
 
           {(block.fields.includes("cta_text") || block.fields.includes("cta_link")) && (
             <div className="grid gap-4 md:grid-cols-2">
