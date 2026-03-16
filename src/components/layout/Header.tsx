@@ -140,7 +140,7 @@ export default function Header() {
               <span className="text-xs hidden xl:inline">Suche</span>
               <kbd className={cn(
                 "hidden xl:inline text-[10px] px-1.5 py-0.5 rounded font-mono",
-                scrolled || !isHome ? "bg-muted" : "bg-primary-foreground/10"
+                scrolled || !isHome ? "bg-muted" : "bg-white/10"
               )}>⌘K</kbd>
             </button>
           </div>
