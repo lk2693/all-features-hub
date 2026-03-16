@@ -17,12 +17,18 @@ const stats = [
   { label: "Ressourcen", value: "80+", icon: Folder },
 ];
 
+interface MediaItem {
+  type: "image" | "video";
+  url: string;
+}
+
 interface HeroContent {
   title: string;
   subtitle: string;
   cta_text: string;
   cta_link: string;
   image_url: string | null;
+  media: MediaItem[];
 }
 
 const defaultContent: HeroContent = {
@@ -31,11 +37,14 @@ const defaultContent: HeroContent = {
   cta_text: "Mehr erfahren",
   cta_link: "/ueber-uns",
   image_url: null,
+  media: [],
 };
 
 export default function ExpandingHero() {
   const [content, setContent] = useState<HeroContent>(defaultContent);
-  const [heroImages, setHeroImages] = useState<string[]>(defaultHeroImages);
+  const [heroMedia, setHeroMedia] = useState<MediaItem[]>(
+    defaultHeroImages.map(url => ({ type: "image" as const, url }))
+  );
   const [isExpanded, setIsExpanded] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -45,24 +54,36 @@ export default function ExpandingHero() {
       try {
         const { data, error } = await supabase
           .from("cms_content")
-          .select("title, subtitle, cta_text, cta_link, image_url")
+          .select("title, subtitle, cta_text, cta_link, image_url, metadata")
           .eq("block_key", "hero")
           .maybeSingle();
 
         if (error) throw error;
         
         if (data) {
+          // Parse media from metadata
+          let media: MediaItem[] = [];
+          if (data.metadata && typeof data.metadata === "object" && !Array.isArray(data.metadata)) {
+            const meta = data.metadata as Record<string, unknown>;
+            if (Array.isArray(meta.media)) {
+              media = meta.media as MediaItem[];
+            }
+          }
+
           setContent({
             title: data.title || defaultContent.title,
             subtitle: data.subtitle || defaultContent.subtitle,
             cta_text: data.cta_text || defaultContent.cta_text,
             cta_link: data.cta_link || defaultContent.cta_link,
             image_url: data.image_url || null,
+            media,
           });
           
-          // Wenn ein CMS-Bild vorhanden ist, verwende nur dieses
-          if (data.image_url) {
-            setHeroImages([data.image_url]);
+          // Use media from metadata, fallback to single image_url, then defaults
+          if (media.length > 0) {
+            setHeroMedia(media);
+          } else if (data.image_url) {
+            setHeroMedia([{ type: "image", url: data.image_url }]);
           }
         }
       } catch (error) {
@@ -81,13 +102,14 @@ export default function ExpandingHero() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Rotate images
+  // Rotate media
   useEffect(() => {
+    if (heroMedia.length <= 1) return;
     const interval = setInterval(() => {
-      setCurrentImageIndex((prev) => (prev + 1) % heroImages.length);
+      setCurrentImageIndex((prev) => (prev + 1) % heroMedia.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [heroMedia.length]);
 
   return (
     <section className="relative overflow-hidden">
@@ -104,7 +126,7 @@ export default function ExpandingHero() {
         }}
         className="relative min-h-[70vh] lg:min-h-[80vh]"
       >
-        {/* Background images with crossfade */}
+        {/* Background media with crossfade */}
         <div className="absolute inset-0">
           <AnimatePresence mode="wait">
             <motion.div
@@ -115,11 +137,22 @@ export default function ExpandingHero() {
               transition={{ duration: 1.2, ease: "easeInOut" }}
               className="absolute inset-0"
             >
-              <img
-                src={heroImages[currentImageIndex]}
-                alt=""
-                className="w-full h-full object-cover"
-              />
+              {heroMedia[currentImageIndex]?.type === "video" ? (
+                <video
+                  src={heroMedia[currentImageIndex].url}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <img
+                  src={heroMedia[currentImageIndex]?.url}
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
+              )}
             </motion.div>
           </AnimatePresence>
           
@@ -212,7 +245,7 @@ export default function ExpandingHero() {
           animate={{ opacity: isExpanded ? 1 : 0 }}
           transition={{ delay: 1.5 }}
         >
-          {heroImages.map((_, index) => (
+          {heroMedia.map((item, index) => (
             <button
               key={index}
               onClick={() => setCurrentImageIndex(index)}
@@ -221,7 +254,7 @@ export default function ExpandingHero() {
                   ? "bg-primary w-8" 
                   : "bg-primary/30 hover:bg-primary/50"
               }`}
-              aria-label={`Bild ${index + 1} anzeigen`}
+              aria-label={`${item.type === "video" ? "Video" : "Bild"} ${index + 1} anzeigen`}
             />
           ))}
         </motion.div>

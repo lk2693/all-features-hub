@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Save, RotateCcw, Home, Users, Calendar, Euro, Upload, X, Image } from "lucide-react";
+import { HeroMediaManager, MediaItem } from "./HeroMediaManager";
 
 interface CMSContent {
   id: string;
@@ -140,6 +141,7 @@ export function CMSEditor() {
   const [activeTab, setActiveTab] = useState("home");
   const [uploadingFor, setUploadingFor] = useState<string | null>(null);
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+  const [heroMedia, setHeroMedia] = useState<MediaItem[]>([]);
 
   useEffect(() => {
     fetchCMSContent();
@@ -173,6 +175,13 @@ export function CMSEditor() {
             cta_text: item.cta_text || defaultData[item.block_key]?.cta_text || "",
             cta_link: item.cta_link || defaultData[item.block_key]?.cta_link || "",
           };
+          // Load hero media from metadata
+          if (item.block_key === "hero" && item.metadata) {
+            const meta = item.metadata as Record<string, unknown>;
+            if (Array.isArray(meta.media)) {
+              setHeroMedia(meta.media as MediaItem[]);
+            }
+          }
         });
       }
 
@@ -294,7 +303,7 @@ export function CMSEditor() {
       
       for (const blockKey of allBlockKeys) {
         const data = formData[blockKey];
-        const updateData = {
+        const updateData: Record<string, unknown> = {
           title: data.title,
           subtitle: data.subtitle,
           content: data.content,
@@ -303,6 +312,11 @@ export function CMSEditor() {
           cta_link: data.cta_link,
           updated_by: user?.id,
         };
+
+        // Store hero media in metadata
+        if (blockKey === "hero") {
+          updateData.metadata = { media: heroMedia };
+        }
 
         if (cmsContent[blockKey]) {
           const { error } = await supabase
@@ -462,7 +476,12 @@ export function CMSEditor() {
             </div>
           )}
 
-          {block.fields.includes("image_url") && renderImageUpload(blockKey)}
+          {block.fields.includes("image_url") && blockKey === "hero" ? (
+            <HeroMediaManager
+              media={heroMedia}
+              onChange={(newMedia) => { setHeroMedia(newMedia); setHasChanges(true); }}
+            />
+          ) : block.fields.includes("image_url") ? renderImageUpload(blockKey) : null}
 
           {(block.fields.includes("cta_text") || block.fields.includes("cta_link")) && (
             <div className="grid gap-4 md:grid-cols-2">
