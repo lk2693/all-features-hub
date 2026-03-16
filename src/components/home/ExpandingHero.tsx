@@ -222,6 +222,6 @@ export default function ExpandingHero() {
           <motion.div className="w-1.5 h-1.5 rounded-full bg-primary-foreground/60" />
         </motion.div>
       </motion.div>
-    </section>
+    </motion.section>
   );
 }
