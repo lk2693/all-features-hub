@@ -3,13 +3,18 @@ import { motion } from "framer-motion";
 import Layout from "@/components/layout/Layout";
 import { Link } from "react-router-dom";
 import { Calendar, ArrowRight, Search } from "lucide-react";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
-import { cn } from "@/lib/utils";
+import newsHero from "@/assets/news-hero.jpg";
+
+type NewsCategory = "news" | "foerderung" | "blog";
+
+const categoryLabels: Record<NewsCategory, string> = {
+  news: "News",
+  foerderung: "Förderung",
+  blog: "Blog",
+};
 
 interface NewsPost {
   id: string;
@@ -18,9 +23,10 @@ interface NewsPost {
   slug: string;
   published_at: string | null;
   created_at: string;
+  category: NewsCategory;
+  cover_image_url: string | null;
 }
 
-// Fallback data when no news in database
 const fallbackNews: NewsPost[] = [
   {
     id: "1",
@@ -29,6 +35,8 @@ const fallbackNews: NewsPost[] = [
     slug: "neue-foerderrichtlinien-2025",
     published_at: new Date().toISOString(),
     created_at: new Date().toISOString(),
+    category: "foerderung",
+    cover_image_url: null,
   },
   {
     id: "2",
@@ -37,6 +45,8 @@ const fallbackNews: NewsPost[] = [
     slug: "vollversammlung-februar-2025",
     published_at: new Date().toISOString(),
     created_at: new Date().toISOString(),
+    category: "news",
+    cover_image_url: null,
   },
   {
     id: "3",
@@ -45,6 +55,8 @@ const fallbackNews: NewsPost[] = [
     slug: "kooperation-staatstheater",
     published_at: new Date().toISOString(),
     created_at: new Date().toISOString(),
+    category: "blog",
+    cover_image_url: null,
   },
 ];
 
@@ -60,18 +72,19 @@ export default function News() {
   const [news, setNews] = useState<NewsPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isFocused, setIsFocused] = useState(false);
 
   useEffect(() => {
     async function fetchNews() {
       try {
         const { data, error } = await supabase
           .from("news_posts")
-          .select("id, title, excerpt, slug, published_at, created_at")
+          .select("id, title, excerpt, slug, published_at, created_at, category, cover_image_url")
           .eq("is_published", true)
           .order("published_at", { ascending: false });
 
         if (error) throw error;
-        setNews(data && data.length > 0 ? data : fallbackNews);
+        setNews(data && data.length > 0 ? (data as NewsPost[]) : fallbackNews);
       } catch (error) {
         console.error("Error fetching news:", error);
         setNews(fallbackNews);
@@ -79,12 +92,11 @@ export default function News() {
         setIsLoading(false);
       }
     }
-
     fetchNews();
   }, []);
 
   const filteredNews = news.filter((item) => {
-    const matchesSearch = 
+    const matchesSearch =
       item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (item.excerpt?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false);
     return matchesSearch;
@@ -96,38 +108,61 @@ export default function News() {
   return (
     <Layout>
       {/* Hero */}
-      <section className="py-16 lg:py-24 bg-gradient-section">
-        <div className="container">
-          <motion.div
+      <section className="relative min-h-[50vh] flex items-end overflow-hidden">
+        <img
+          src={newsHero}
+          alt="News & Aktuelles"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-foreground via-foreground/50 to-foreground/10" />
+
+        <div className="container relative z-10 pb-14 pt-36">
+          <motion.span
+            className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase bg-primary/90 text-primary-foreground mb-5"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="max-w-3xl"
+            transition={{ duration: 0.5 }}
           >
-            <h1 className="font-display text-4xl font-bold text-foreground sm:text-5xl">
-              News & Aktuelles
-            </h1>
-            <p className="mt-6 text-lg text-muted-foreground leading-relaxed">
-              Neuigkeiten aus der Braunschweiger Kulturszene, kulturpolitische Entwicklungen und Informationen vom Kulturrat.
-            </p>
-          </motion.div>
+            Aktuelles
+          </motion.span>
+          <motion.h1
+            className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-background tracking-tight leading-[1.1]"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+          >
+            News & Aktuelles
+          </motion.h1>
+          <motion.p
+            className="mt-4 text-lg text-background/60 max-w-xl"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.2 }}
+          >
+            Neuigkeiten aus der Braunschweiger Kulturszene, kulturpolitische Entwicklungen und Informationen vom Kulturrat.
+          </motion.p>
         </div>
       </section>
 
-      {/* Filters */}
-      <section className="py-8 bg-background border-b border-border">
+      {/* Search bar */}
+      <section className="py-8 bg-background">
         <div className="container">
-          <div className="flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-end">
-            {/* Search */}
-            <div className="relative max-w-sm w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Suchen..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
+          <div
+            className={`flex items-center gap-2 rounded-full border bg-card px-4 py-2 max-w-md transition-all duration-300 ${
+              isFocused
+                ? "border-primary/50 shadow-[0_0_0_3px_hsl(var(--primary)/0.1)]"
+                : "border-border"
+            }`}
+          >
+            <Search className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            <input
+              placeholder="Artikel durchsuchen…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none py-1"
+            />
           </div>
         </div>
       </section>
@@ -136,49 +171,14 @@ export default function News() {
       <section className="py-16 lg:py-24 bg-background">
         <div className="container">
           {isLoading ? (
-            <>
-              {/* Featured Skeleton */}
-              <div className="mb-12">
-                <Card className="overflow-hidden">
-                  <div className="grid lg:grid-cols-2">
-                    <Skeleton className="aspect-video lg:aspect-auto lg:h-full" />
-                    <div className="p-8 space-y-4">
-                      <div className="flex items-center gap-3">
-                        <Skeleton className="h-5 w-20" />
-                        <Skeleton className="h-4 w-24" />
-                      </div>
-                      <Skeleton className="h-8 w-full" />
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-4 w-3/4" />
-                      <Skeleton className="h-4 w-24" />
-                    </div>
-                  </div>
-                </Card>
-              </div>
-
-              {/* Regular Skeletons */}
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="space-y-8">
+              <Skeleton className="w-full h-80 rounded-2xl" />
+              <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
                 {[1, 2, 3].map((i) => (
-                  <Card key={i} className="h-full flex flex-col">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-center justify-between gap-4 mb-2">
-                        <Skeleton className="h-5 w-16" />
-                        <Skeleton className="h-4 w-24" />
-                      </div>
-                      <Skeleton className="h-6 w-full" />
-                    </CardHeader>
-                    <CardContent className="flex-1">
-                      <Skeleton className="h-4 w-full mb-2" />
-                      <Skeleton className="h-4 w-full mb-2" />
-                      <Skeleton className="h-4 w-2/3" />
-                    </CardContent>
-                    <CardFooter className="pt-0">
-                      <Skeleton className="h-4 w-24" />
-                    </CardFooter>
-                  </Card>
+                  <Skeleton key={i} className="h-72 rounded-2xl" />
                 ))}
               </div>
-            </>
+            </div>
           ) : (
             <>
               {/* Featured Article */}
@@ -187,79 +187,130 @@ export default function News() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6 }}
-                  className="mb-12"
+                  className="mb-10"
                 >
-                  <Link to={`/news/${featuredNews.slug}`} className="block group">
-                    <Card className="overflow-hidden border-border/50 hover:shadow-card-hover transition-all duration-300">
+                  <Link to={`/news/${featuredNews.slug}`} className="group block">
+                    <div className="relative rounded-2xl overflow-hidden bg-card border border-border/50 hover:border-primary/30 hover:shadow-glow transition-all duration-300">
                       <div className="grid lg:grid-cols-2">
-                        <div className="aspect-video lg:aspect-auto bg-gradient-hero opacity-80" />
-                        <div className="p-8">
-                          <div className="flex items-center gap-3 mb-4">
-                            <Badge className="bg-primary text-primary-foreground">Aktuell</Badge>
-                            <span className="text-sm text-muted-foreground flex items-center gap-1.5">
-                              <Calendar className="h-3.5 w-3.5" />
+                        {/* Image */}
+                        <div className="aspect-video lg:aspect-auto lg:min-h-[320px] bg-muted/50 overflow-hidden">
+                          {featuredNews.cover_image_url ? (
+                            <img
+                              src={featuredNews.cover_image_url}
+                              alt={featuredNews.title}
+                              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-primary/10 via-accent/10 to-secondary/20 flex items-center justify-center">
+                              <span className="font-display text-8xl font-bold text-primary/10">
+                                {categoryLabels[featuredNews.category]?.[0] || "N"}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-8 lg:p-10 flex flex-col justify-center">
+                          <div className="flex items-center gap-3 mb-5">
+                            <Badge
+                              className={
+                                featuredNews.category === "foerderung"
+                                  ? "bg-warning/10 text-warning border-warning/30"
+                                  : "bg-primary/10 text-primary border-primary/30"
+                              }
+                              variant="outline"
+                            >
+                              {categoryLabels[featuredNews.category] || "News"}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground flex items-center gap-1.5">
+                              <Calendar className="h-3 w-3" />
                               {formatDate(featuredNews.published_at || featuredNews.created_at)}
                             </span>
                           </div>
-                          <h2 className="font-display text-2xl font-bold text-foreground group-hover:text-primary transition-colors mb-4">
+                          <h2 className="font-display text-2xl lg:text-3xl font-bold text-foreground group-hover:text-primary transition-colors mb-4 leading-tight">
                             {featuredNews.title}
                           </h2>
-                          <p className="text-muted-foreground mb-6">
+                          <p className="text-muted-foreground leading-relaxed mb-6 line-clamp-3">
                             {featuredNews.excerpt || "Lesen Sie mehr über diesen Beitrag..."}
                           </p>
-                          <span className="inline-flex items-center text-primary font-medium gap-2 group-hover:gap-3 transition-all">
+                          <span className="inline-flex items-center gap-2 text-sm font-semibold text-primary group-hover:gap-3 transition-all">
                             Weiterlesen
                             <ArrowRight className="h-4 w-4" />
                           </span>
                         </div>
                       </div>
-                    </Card>
+                    </div>
                   </Link>
                 </motion.div>
               )}
 
               {/* Regular Articles */}
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
                 {regularNews.map((item, index) => (
                   <motion.div
                     key={item.id}
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 25 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    transition={{ duration: 0.5, delay: index * 0.08 }}
                   >
-                    <Link to={`/news/${item.slug}`} className="block h-full group">
-                      <Card className="h-full flex flex-col border-border/50 hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300">
-                        <CardHeader className="pb-3">
-                          <div className="flex items-center justify-between gap-4 mb-2">
-                            <Badge variant="secondary">News</Badge>
-                            <span className="text-sm text-muted-foreground flex items-center gap-1.5">
-                              <Calendar className="h-3.5 w-3.5" />
+                    <Link to={`/news/${item.slug}`} className="group block h-full">
+                      <div className="h-full rounded-2xl overflow-hidden border border-border/50 bg-card hover:border-primary/30 hover:shadow-glow transition-all duration-300">
+                        {/* Image */}
+                        <div className="aspect-[16/10] overflow-hidden bg-muted/50">
+                          {item.cover_image_url ? (
+                            <img
+                              src={item.cover_image_url}
+                              alt={item.title}
+                              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-primary/10 via-accent/10 to-secondary/20 flex items-center justify-center">
+                              <span className="font-display text-6xl font-bold text-primary/10">
+                                {categoryLabels[item.category]?.[0] || "N"}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-6">
+                          <div className="flex items-center gap-3 mb-3">
+                            <Badge
+                              variant="outline"
+                              className={
+                                item.category === "foerderung"
+                                  ? "border-warning/30 text-warning"
+                                  : item.category === "blog"
+                                  ? "border-primary/30 text-primary"
+                                  : "border-border"
+                              }
+                            >
+                              {categoryLabels[item.category] || "News"}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground flex items-center gap-1">
+                              <Calendar className="h-3 w-3" />
                               {formatDate(item.published_at || item.created_at)}
                             </span>
                           </div>
-                          <h3 className="font-display text-lg font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                          <h3 className="font-display text-lg font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2 mb-2">
                             {item.title}
                           </h3>
-                        </CardHeader>
-                        <CardContent className="flex-1">
-                          <p className="text-muted-foreground text-sm line-clamp-3">
+                          <p className="text-muted-foreground text-sm line-clamp-2 mb-4">
                             {item.excerpt || "Lesen Sie mehr über diesen Beitrag..."}
                           </p>
-                        </CardContent>
-                        <CardFooter className="pt-0">
-                          <span className="text-sm font-medium text-primary flex items-center gap-1 group-hover:gap-2 transition-all">
+                          <span className="inline-flex items-center gap-1.5 text-sm font-medium text-primary opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
                             Weiterlesen
-                            <ArrowRight className="h-4 w-4" />
+                            <ArrowRight className="h-3.5 w-3.5" />
                           </span>
-                        </CardFooter>
-                      </Card>
+                        </div>
+                      </div>
                     </Link>
                   </motion.div>
                 ))}
               </div>
 
               {filteredNews.length === 0 && (
-                <div className="text-center py-12">
+                <div className="text-center py-16">
                   <p className="text-muted-foreground">Keine Artikel gefunden.</p>
                 </div>
               )}
