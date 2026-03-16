@@ -202,7 +202,7 @@ export default function Header() {
                       size="sm"
                       asChild
                       className={cn(
-                        scrolled || !isHome ? "" : "text-primary-foreground hover:bg-primary-foreground/10"
+                        scrolled || !isHome ? "" : "text-white hover:bg-white/10"
                       )}
                     >
                       <Link to="/auth">Anmelden</Link>
