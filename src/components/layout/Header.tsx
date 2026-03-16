@@ -157,7 +157,7 @@ export default function Header() {
                         size="sm"
                         className={cn(
                           "gap-2 rounded-full",
-                          scrolled || !isHome ? "" : "text-primary-foreground hover:bg-primary-foreground/10"
+                          scrolled || !isHome ? "" : "text-white hover:bg-white/10"
                         )}
                       >
                         <div className="w-7 h-7 rounded-full bg-gradient-hero flex items-center justify-center">
