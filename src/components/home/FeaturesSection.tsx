@@ -1,4 +1,3 @@
-import { useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
@@ -64,31 +63,8 @@ const features = [
 ];
 
 export default function FeaturesSection() {
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
-
-  const checkScroll = () => {
-    const el = scrollContainerRef.current;
-    if (!el) return;
-    setCanScrollLeft(el.scrollLeft > 10);
-    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 10);
-  };
-
-  useEffect(() => {
-    const el = scrollContainerRef.current;
-    if (!el) return;
-    checkScroll();
-    el.addEventListener("scroll", checkScroll, { passive: true });
-    window.addEventListener("resize", checkScroll);
-    return () => {
-      el.removeEventListener("scroll", checkScroll);
-      window.removeEventListener("resize", checkScroll);
-    };
-  }, []);
-
   return (
-    <section className="py-24 lg:py-36 bg-background overflow-hidden">
+    <section className="py-24 lg:py-36 bg-background">
       <div className="container">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
@@ -98,7 +74,7 @@ export default function FeaturesSection() {
           className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-14"
         >
           <h2 className="font-display text-5xl sm:text-6xl lg:text-7xl font-bold text-foreground tracking-tight leading-[1.05]">
-            Was wir{"\n"}
+            Was wir{" "}
             <span className="text-gradient">bieten</span>
           </h2>
 
@@ -114,22 +90,9 @@ export default function FeaturesSection() {
             </span>
           </Link>
         </motion.div>
-      </div>
 
-      {/* Scrollable cards */}
-      <div className="relative">
-        {canScrollLeft && (
-          <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
-        )}
-        {canScrollRight && (
-          <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
-        )}
-
-        <div
-          ref={scrollContainerRef}
-          className="flex gap-5 overflow-x-auto px-[max(1.5rem,calc((100vw-1280px)/2+1.5rem))] pb-4 snap-x snap-mandatory"
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-        >
+        {/* Grid layout */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {features.map((feature, index) => (
             <FeatureCard key={feature.title} feature={feature} index={index} />
           ))}
@@ -146,29 +109,23 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-30px" }}
       transition={{ duration: 0.5, delay: index * 0.07, ease: [0.25, 0.1, 0, 1] }}
-      className="snap-start flex-shrink-0"
     >
       <Link
         to={feature.href}
-        className="group relative block w-[280px] sm:w-[320px] aspect-[3/4] rounded-3xl overflow-hidden"
+        className="group relative block aspect-[3/4] rounded-3xl overflow-hidden"
       >
-        {/* Background image */}
         <img
           src={feature.image}
           alt={feature.title}
           className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
           loading="lazy"
         />
-
-        {/* Dark gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/20 to-transparent" />
 
-        {/* Arrow button top-right */}
         <div className="absolute top-4 right-4 p-2.5 rounded-full bg-background/90 text-foreground backdrop-blur-sm opacity-80 group-hover:opacity-100 group-hover:bg-background transition-all duration-300">
           <ArrowUpRight className="h-4 w-4" />
         </div>
 
-        {/* Text overlay bottom */}
         <div className="absolute bottom-0 left-0 right-0 p-6">
           <h3 className="font-display text-2xl font-bold text-background mb-1">
             {feature.title}
