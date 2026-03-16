@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Save, RotateCcw, Home, Users, Calendar, Euro, Upload, X, Image } from "lucide-react";
+import { HeroMediaManager, MediaItem } from "./HeroMediaManager";
 
 interface CMSContent {
   id: string;
