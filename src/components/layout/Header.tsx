@@ -242,7 +242,7 @@ export default function Header() {
                 "p-2.5 rounded-lg transition-colors",
                 scrolled || !isHome
                   ? "text-foreground hover:bg-muted"
-                  : "text-primary-foreground hover:bg-primary-foreground/10"
+                  : "text-white hover:bg-white/10"
               )}
             >
               <AnimatePresence mode="wait" initial={false}>
