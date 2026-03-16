@@ -303,7 +303,6 @@ export function CMSEditor() {
       
       for (const blockKey of allBlockKeys) {
         const data = formData[blockKey];
-        const data = formData[blockKey];
         const updateData: Record<string, unknown> = {
           title: data.title,
           subtitle: data.subtitle,
