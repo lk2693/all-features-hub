@@ -1,11 +1,28 @@
 import { useState, useRef } from "react";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { Loader2, X, Image, Film, Plus, GripVertical, ArrowUp, ArrowDown } from "lucide-react";
+import { Loader2, X, Image, Film, Plus, GripVertical } from "lucide-react";
 
 export interface MediaItem {
   type: "image" | "video";
@@ -17,12 +34,96 @@ interface HeroMediaManagerProps {
   onChange: (media: MediaItem[]) => void;
 }
 
+function SortableMediaItem({
+  item,
+  id,
+  onRemove,
+}: {
+  item: MediaItem;
+  id: string;
+  onRemove: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 10 : undefined,
+  };
+
+  return (
+    <Card ref={setNodeRef} style={style} className="p-3 flex items-center gap-3">
+      <button
+        className="cursor-grab active:cursor-grabbing touch-none shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="h-4 w-4" />
+      </button>
+
+      {/* Thumbnail */}
+      <div className="w-20 h-14 rounded overflow-hidden bg-muted shrink-0">
+        {item.type === "image" ? (
+          <img src={item.url} alt="" className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-muted">
+            <Film className="h-6 w-6 text-muted-foreground" />
+          </div>
+        )}
+      </div>
+
+      {/* Info */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          {item.type === "image" ? (
+            <Image className="h-3.5 w-3.5 text-primary shrink-0" />
+          ) : (
+            <Film className="h-3.5 w-3.5 text-accent-foreground shrink-0" />
+          )}
+          <span className="text-xs font-medium uppercase text-muted-foreground">
+            {item.type === "image" ? "Bild" : "Video"}
+          </span>
+        </div>
+        <p className="text-xs text-muted-foreground truncate mt-0.5">{item.url}</p>
+      </div>
+
+      {/* Remove */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-7 w-7 text-destructive hover:text-destructive shrink-0"
+        onClick={onRemove}
+      >
+        <X className="h-3.5 w-3.5" />
+      </Button>
+    </Card>
+  );
+}
+
 export function HeroMediaManager({ media, onChange }: HeroMediaManagerProps) {
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
   const [urlInput, setUrlInput] = useState("");
   const [urlType, setUrlType] = useState<"image" | "video">("image");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  // Stable IDs for sortable
+  const itemIds = media.map((_, i) => `media-${i}`);
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = itemIds.indexOf(active.id as string);
+    const newIndex = itemIds.indexOf(over.id as string);
+    onChange(arrayMove(media, oldIndex, newIndex));
+  }
 
   async function handleFileUpload(file: File) {
     const isVideo = file.type.startsWith("video/");
@@ -67,66 +168,26 @@ export function HeroMediaManager({ media, onChange }: HeroMediaManagerProps) {
     onChange(media.filter((_, i) => i !== index));
   }
 
-  function handleMove(index: number, direction: -1 | 1) {
-    const newMedia = [...media];
-    const target = index + direction;
-    if (target < 0 || target >= newMedia.length) return;
-    [newMedia[index], newMedia[target]] = [newMedia[target], newMedia[index]];
-    onChange(newMedia);
-  }
-
   return (
     <div className="space-y-4">
-      <Label>Hero-Medien (Bilder & Videos)</Label>
+      <Label>Hero-Medien (Bilder & Videos) – per Drag & Drop sortieren</Label>
 
-      {/* Current media list */}
+      {/* Sortable media list */}
       {media.length > 0 && (
-        <div className="space-y-2">
-          {media.map((item, index) => (
-            <Card key={index} className="p-3 flex items-center gap-3">
-              <GripVertical className="h-4 w-4 text-muted-foreground shrink-0" />
-              
-              {/* Thumbnail */}
-              <div className="w-20 h-14 rounded overflow-hidden bg-muted shrink-0">
-                {item.type === "image" ? (
-                  <img src={item.url} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-muted">
-                    <Film className="h-6 w-6 text-muted-foreground" />
-                  </div>
-                )}
-              </div>
-
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  {item.type === "image" ? (
-                    <Image className="h-3.5 w-3.5 text-primary shrink-0" />
-                  ) : (
-                    <Film className="h-3.5 w-3.5 text-accent-foreground shrink-0" />
-                  )}
-                  <span className="text-xs font-medium uppercase text-muted-foreground">
-                    {item.type === "image" ? "Bild" : "Video"}
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground truncate mt-0.5">{item.url}</p>
-              </div>
-
-              {/* Actions */}
-              <div className="flex items-center gap-1 shrink-0">
-                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleMove(index, -1)} disabled={index === 0}>
-                  <ArrowUp className="h-3.5 w-3.5" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleMove(index, 1)} disabled={index === media.length - 1}>
-                  <ArrowDown className="h-3.5 w-3.5" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => handleRemove(index)}>
-                  <X className="h-3.5 w-3.5" />
-                </Button>
-              </div>
-            </Card>
-          ))}
-        </div>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
+            <div className="space-y-2">
+              {media.map((item, index) => (
+                <SortableMediaItem
+                  key={itemIds[index]}
+                  id={itemIds[index]}
+                  item={item}
+                  onRemove={() => handleRemove(index)}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
       )}
 
       {/* Upload area */}
