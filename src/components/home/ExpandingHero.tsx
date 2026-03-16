@@ -245,7 +245,7 @@ export default function ExpandingHero() {
           animate={{ opacity: isExpanded ? 1 : 0 }}
           transition={{ delay: 1.5 }}
         >
-          {heroImages.map((_, index) => (
+          {heroMedia.map((item, index) => (
             <button
               key={index}
               onClick={() => setCurrentImageIndex(index)}
@@ -254,7 +254,7 @@ export default function ExpandingHero() {
                   ? "bg-primary w-8" 
                   : "bg-primary/30 hover:bg-primary/50"
               }`}
-              aria-label={`Bild ${index + 1} anzeigen`}
+              aria-label={`${item.type === "video" ? "Video" : "Bild"} ${index + 1} anzeigen`}
             />
           ))}
         </motion.div>
