@@ -303,7 +303,8 @@ export function CMSEditor() {
       
       for (const blockKey of allBlockKeys) {
         const data = formData[blockKey];
-        const updateData = {
+        const data = formData[blockKey];
+        const updateData: Record<string, unknown> = {
           title: data.title,
           subtitle: data.subtitle,
           content: data.content,
@@ -312,6 +313,11 @@ export function CMSEditor() {
           cta_link: data.cta_link,
           updated_by: user?.id,
         };
+
+        // Store hero media in metadata
+        if (blockKey === "hero") {
+          updateData.metadata = { media: heroMedia };
+        }
 
         if (cmsContent[blockKey]) {
           const { error } = await supabase
