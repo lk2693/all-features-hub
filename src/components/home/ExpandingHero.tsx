@@ -17,12 +17,18 @@ const stats = [
   { label: "Ressourcen", value: "80+", icon: Folder },
 ];
 
+interface MediaItem {
+  type: "image" | "video";
+  url: string;
+}
+
 interface HeroContent {
   title: string;
   subtitle: string;
   cta_text: string;
   cta_link: string;
   image_url: string | null;
+  media: MediaItem[];
 }
 
 const defaultContent: HeroContent = {
@@ -31,6 +37,7 @@ const defaultContent: HeroContent = {
   cta_text: "Mehr erfahren",
   cta_link: "/ueber-uns",
   image_url: null,
+  media: [],
 };
 
 export default function ExpandingHero() {
