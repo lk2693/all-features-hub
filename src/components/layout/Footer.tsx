@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Instagram, Youtube, Mail, MapPin, ArrowUpRight } from "lucide-react";
 import { useCookieConsent } from "@/contexts/CookieConsentContext";
 import { NewsletterSignup } from "@/components/NewsletterSignup";
+import newsletterImage from "@/assets/newsletter-kultur.jpg";
 
 const footerLinks = {
   kulturrat: [
@@ -46,17 +47,30 @@ export default function Footer() {
       {/* Newsletter Band */}
       <div className="border-b border-background/10">
         <div className="container py-14 lg:py-16">
-          <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
-            <div className="max-w-md">
+          <div className="flex flex-col gap-8 lg:flex-row lg:items-stretch">
+            {/* Image */}
+            <div className="relative w-full lg:w-[320px] flex-shrink-0 rounded-2xl overflow-hidden aspect-[4/3] lg:aspect-auto">
+              <img
+                src={newsletterImage}
+                alt="Kulturszene Braunschweig"
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-foreground/40 to-transparent" />
+            </div>
+
+            {/* Content */}
+            <div className="flex flex-col justify-center flex-1 lg:pl-10">
               <h3 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">
                 Bleib in der{" "}
                 <span className="text-primary">Szene</span>
               </h3>
-              <p className="mt-3 text-background/50 text-sm leading-relaxed">
+              <p className="mt-3 text-background/50 text-sm leading-relaxed max-w-md">
                 Kulturpolitik, Förderungen und Veranstaltungen – direkt in dein Postfach.
               </p>
+              <div className="mt-6">
+                <NewsletterSignup className="w-full max-w-md" />
+              </div>
             </div>
-            <NewsletterSignup className="w-full max-w-md" />
           </div>
         </div>
       </div>
