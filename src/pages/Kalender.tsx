@@ -1,16 +1,16 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import { format, parseISO, isSameMonth, startOfMonth, endOfMonth, addMonths, subMonths } from "date-fns";
+import { format, parseISO, startOfMonth, endOfMonth, addMonths, subMonths } from "date-fns";
 import { de } from "date-fns/locale";
 import Layout from "@/components/layout/Layout";
-import { Calendar as CalendarIcon, Clock, MapPin, Filter, ChevronLeft, ChevronRight, ExternalLink, Loader2 } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, MapPin, ChevronLeft, ChevronRight, ExternalLink, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useCMSContent } from "@/hooks/useCMSContent";
 import { supabase } from "@/integrations/supabase/client";
+import kalenderHero from "@/assets/kalender-hero.jpg";
 
 const eventCategories = [
   { value: "alle", label: "Alle" },
@@ -29,12 +29,12 @@ const categoryColors: Record<string, string> = {
   veranstaltung: "bg-primary",
 };
 
-const categoryBorderColors: Record<string, string> = {
-  sitzung: "border-primary text-primary",
-  frist: "border-destructive text-destructive",
-  networking: "border-accent text-accent-foreground",
-  workshop: "border-secondary-foreground text-secondary-foreground",
-  veranstaltung: "border-primary text-primary",
+const categoryBadgeStyles: Record<string, string> = {
+  sitzung: "border-primary/30 text-primary bg-primary/10",
+  frist: "border-destructive/30 text-destructive bg-destructive/10",
+  networking: "border-accent text-accent-foreground bg-accent/30",
+  workshop: "border-secondary-foreground/30 text-secondary-foreground bg-secondary/30",
+  veranstaltung: "border-primary/30 text-primary bg-primary/10",
 };
 
 interface Event {
@@ -50,31 +50,27 @@ interface Event {
   website_url: string | null;
 }
 
-function formatEventDate(startDate: string, endDate: string | null, isAllDay: boolean): string {
-  const start = parseISO(startDate);
-  
-  if (isAllDay) {
-    return format(start, "d. MMMM yyyy", { locale: de });
-  }
-  
-  return format(start, "d. MMMM yyyy", { locale: de });
+function formatEventDate(startDate: string): string {
+  return format(parseISO(startDate), "d. MMMM yyyy", { locale: de });
 }
 
 function formatEventTime(startDate: string, endDate: string | null, isAllDay: boolean): string {
-  if (isAllDay) {
-    return "Ganztägig";
-  }
-  
+  if (isAllDay) return "Ganztägig";
   const start = parseISO(startDate);
   const startTime = format(start, "HH:mm", { locale: de });
-  
   if (endDate) {
     const end = parseISO(endDate);
-    const endTime = format(end, "HH:mm", { locale: de });
-    return `${startTime} - ${endTime} Uhr`;
+    return `${startTime} – ${format(end, "HH:mm", { locale: de })} Uhr`;
   }
-  
   return `${startTime} Uhr`;
+}
+
+function formatDayNumber(startDate: string): string {
+  return format(parseISO(startDate), "dd", { locale: de });
+}
+
+function formatDayName(startDate: string): string {
+  return format(parseISO(startDate), "EEE", { locale: de });
 }
 
 export default function Kalender() {
@@ -86,7 +82,7 @@ export default function Kalender() {
     queryKey: ["events", currentMonth],
     queryFn: async () => {
       const startOfCurrentMonth = startOfMonth(currentMonth);
-      const endOfCurrentMonth = endOfMonth(addMonths(currentMonth, 2)); // Fetch 3 months
+      const endOfCurrentMonth = endOfMonth(addMonths(currentMonth, 2));
 
       const { data, error } = await supabase
         .from("events")
@@ -105,91 +101,118 @@ export default function Kalender() {
     ? events
     : events.filter((event) => event.category === selectedCategory);
 
-  // Group events by month
   const groupedEvents = filteredEvents.reduce((acc, event) => {
     const monthKey = format(parseISO(event.start_date), "MMMM yyyy", { locale: de });
-    if (!acc[monthKey]) {
-      acc[monthKey] = [];
-    }
+    if (!acc[monthKey]) acc[monthKey] = [];
     acc[monthKey].push(event);
     return acc;
   }, {} as Record<string, Event[]>);
 
-  const handlePreviousMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
-  const handleNextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
-
   return (
     <Layout>
       {/* Hero */}
-      <section className="py-16 lg:py-24 bg-gradient-section">
-        <div className="container">
-          <motion.div
+      <section className="relative min-h-[50vh] flex items-end overflow-hidden">
+        <img
+          src={kalenderHero}
+          alt="Kulturkalender"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-foreground via-foreground/50 to-foreground/10" />
+
+        <div className="container relative z-10 pb-14 pt-36">
+          <motion.span
+            className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase bg-primary/90 text-primary-foreground mb-5"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="max-w-3xl"
+            transition={{ duration: 0.5 }}
           >
-            <h1 className="font-display text-4xl font-bold text-foreground sm:text-5xl">
-              {heroContent.title}
-            </h1>
-            <p className="mt-6 text-lg text-muted-foreground leading-relaxed">
-              {heroContent.subtitle}
-            </p>
-          </motion.div>
+            Kalender
+          </motion.span>
+          <motion.h1
+            className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-background tracking-tight leading-[1.1]"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+          >
+            {heroContent.title || "Termine & Veranstaltungen"}
+          </motion.h1>
+          <motion.p
+            className="mt-4 text-lg text-background/60 max-w-xl"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.2 }}
+          >
+            {heroContent.subtitle || "Sitzungen, Veranstaltungen und Förderfristen auf einen Blick."}
+          </motion.p>
         </div>
       </section>
 
-      {/* Filters & Navigation */}
-      <section className="py-6 bg-background border-b border-border">
+      {/* Filters & Month Navigation */}
+      <section className="py-6 bg-background border-b border-border/50 sticky top-0 z-30 backdrop-blur-md bg-background/90">
         <div className="container">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             {/* Month Navigation */}
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="icon" onClick={handlePreviousMonth}>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+                className="rounded-full h-9 w-9"
+              >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <span className="font-medium min-w-[160px] text-center">
+              <span className="font-display text-lg font-semibold min-w-[180px] text-center capitalize">
                 {format(currentMonth, "MMMM yyyy", { locale: de })}
               </span>
-              <Button variant="outline" size="icon" onClick={handleNextMonth}>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+                className="rounded-full h-9 w-9"
+              >
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
 
-            {/* Category Filter */}
-            <div className="flex items-center gap-4">
-              <Filter className="h-5 w-5 text-muted-foreground hidden sm:block" />
-              <div className="flex flex-wrap gap-2">
-                {eventCategories.map((cat) => (
-                  <Button
-                    key={cat.value}
-                    variant={selectedCategory === cat.value ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSelectedCategory(cat.value)}
-                    className={cn(
-                      selectedCategory === cat.value && "bg-gradient-hero hover:opacity-90"
-                    )}
-                  >
-                    {cat.label}
-                  </Button>
-                ))}
-              </div>
+            {/* Category Pills */}
+            <div className="flex flex-wrap gap-2">
+              {eventCategories.map((cat) => (
+                <button
+                  key={cat.value}
+                  onClick={() => setSelectedCategory(cat.value)}
+                  className={cn(
+                    "px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200",
+                    selectedCategory === cat.value
+                      ? "bg-primary text-primary-foreground shadow-md"
+                      : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  {cat.label}
+                </button>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
-      {/* Events List */}
+      {/* Events */}
       <section className="py-16 lg:py-24 bg-background">
-        <div className="container">
+        <div className="container max-w-4xl">
           {isLoading ? (
-            <div className="flex justify-center py-12">
+            <div className="flex flex-col items-center justify-center py-20 gap-3">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <p className="text-sm text-muted-foreground">Termine werden geladen…</p>
             </div>
           ) : Object.keys(groupedEvents).length === 0 ? (
-            <div className="text-center py-16">
-              <CalendarIcon className="mx-auto h-16 w-16 text-muted-foreground/50 mb-4" />
-              <h2 className="font-display text-2xl font-semibold text-foreground mb-2">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center py-20"
+            >
+              <div className="w-20 h-20 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-6">
+                <CalendarIcon className="h-10 w-10 text-muted-foreground/50" />
+              </div>
+              <h2 className="font-display text-2xl font-semibold text-foreground mb-3">
                 Keine Termine gefunden
               </h2>
               <p className="text-muted-foreground max-w-md mx-auto">
@@ -197,97 +220,92 @@ export default function Kalender() {
                   ? "In dieser Kategorie gibt es aktuell keine Termine."
                   : "Aktuell sind keine Termine geplant. Schauen Sie später wieder vorbei!"}
               </p>
-            </div>
+            </motion.div>
           ) : (
-            <div className="space-y-12">
+            <div className="space-y-14">
               {Object.entries(groupedEvents).map(([monthKey, monthEvents]) => (
                 <div key={monthKey}>
-                  <h2 className="font-display text-2xl font-bold text-foreground mb-6 capitalize">
+                  <motion.h2
+                    initial={{ opacity: 0, x: -10 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    className="font-display text-sm font-semibold uppercase tracking-widest text-primary mb-6 capitalize"
+                  >
                     {monthKey}
-                  </h2>
-                  <div className="space-y-4">
+                  </motion.h2>
+
+                  <div className="space-y-3">
                     {monthEvents.map((event, index) => (
                       <motion.div
                         key={event.id}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
+                        initial={{ opacity: 0, y: 15 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
                         transition={{ duration: 0.4, delay: index * 0.05 }}
                       >
-                        <Card className="border-border/50 hover:shadow-card transition-all duration-300">
-                          <CardHeader className="pb-2">
-                            <div className="flex flex-col lg:flex-row lg:items-start gap-4">
-                              {/* Date indicator */}
-                              <div
-                                className={cn(
-                                  "w-1 lg:w-2 lg:h-full rounded-full shrink-0 hidden lg:block",
-                                  categoryColors[event.category] || "bg-primary"
-                                )}
-                              />
+                        <div className="group flex gap-4 sm:gap-6 p-4 sm:p-5 rounded-2xl border border-border/50 bg-card hover:border-primary/30 hover:shadow-glow transition-all duration-300">
+                          {/* Date block */}
+                          <div className="flex flex-col items-center justify-center shrink-0 w-14">
+                            <span className="text-xs font-medium text-muted-foreground uppercase">
+                              {formatDayName(event.start_date)}
+                            </span>
+                            <span className="font-display text-3xl font-bold text-foreground leading-none mt-0.5">
+                              {formatDayNumber(event.start_date)}
+                            </span>
+                            <div className={cn("w-6 h-1 rounded-full mt-2", categoryColors[event.category] || "bg-primary")} />
+                          </div>
 
-                              {/* Mobile indicator */}
-                              <div
+                          {/* Content */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                              <Badge
+                                variant="outline"
                                 className={cn(
-                                  "w-full h-1 rounded-full lg:hidden",
-                                  categoryColors[event.category] || "bg-primary"
+                                  "text-xs font-medium",
+                                  categoryBadgeStyles[event.category] || "border-primary/30 text-primary bg-primary/10"
                                 )}
-                              />
-
-                              {/* Content */}
-                              <div className="flex-1">
-                                <div className="flex flex-wrap items-center gap-2 mb-2">
-                                  <Badge
-                                    variant="outline"
-                                    className={cn(
-                                      categoryBorderColors[event.category] || "border-primary text-primary"
-                                    )}
-                                  >
-                                    {eventCategories.find((c) => c.value === event.category)?.label || event.category}
-                                  </Badge>
-                                  {event.organizer && (
-                                    <span className="text-sm text-muted-foreground">
-                                      von {event.organizer}
-                                    </span>
-                                  )}
-                                </div>
-                                <CardTitle className="font-display text-xl mb-2">
-                                  {event.title}
-                                </CardTitle>
-                                {event.description && (
-                                  <p className="text-muted-foreground mb-4">
-                                    {event.description}
-                                  </p>
-                                )}
-                                <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                                  <span className="flex items-center gap-1.5">
-                                    <CalendarIcon className="h-4 w-4" />
-                                    {formatEventDate(event.start_date, event.end_date, event.is_all_day)}
-                                  </span>
-                                  <span className="flex items-center gap-1.5">
-                                    <Clock className="h-4 w-4" />
-                                    {formatEventTime(event.start_date, event.end_date, event.is_all_day)}
-                                  </span>
-                                  {event.location && (
-                                    <span className="flex items-center gap-1.5">
-                                      <MapPin className="h-4 w-4" />
-                                      {event.location}
-                                    </span>
-                                  )}
-                                </div>
-                                {event.website_url && (
-                                  <a
-                                    href={event.website_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-1 mt-4 text-sm text-primary hover:underline"
-                                  >
-                                    Weitere Infos
-                                    <ExternalLink className="h-3 w-3" />
-                                  </a>
-                                )}
-                              </div>
+                              >
+                                {eventCategories.find((c) => c.value === event.category)?.label || event.category}
+                              </Badge>
+                              {event.organizer && (
+                                <span className="text-xs text-muted-foreground">
+                                  von {event.organizer}
+                                </span>
+                              )}
                             </div>
-                          </CardHeader>
-                        </Card>
+                            <h3 className="font-display text-lg font-semibold text-foreground group-hover:text-primary transition-colors truncate">
+                              {event.title}
+                            </h3>
+                            {event.description && (
+                              <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                                {event.description}
+                              </p>
+                            )}
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 text-sm text-muted-foreground">
+                              <span className="flex items-center gap-1.5">
+                                <Clock className="h-3.5 w-3.5" />
+                                {formatEventTime(event.start_date, event.end_date, event.is_all_day)}
+                              </span>
+                              {event.location && (
+                                <span className="flex items-center gap-1.5">
+                                  <MapPin className="h-3.5 w-3.5" />
+                                  {event.location}
+                                </span>
+                              )}
+                            </div>
+                            {event.website_url && (
+                              <a
+                                href={event.website_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 mt-3 text-sm font-medium text-primary hover:underline"
+                              >
+                                Weitere Infos
+                                <ExternalLink className="h-3 w-3" />
+                              </a>
+                            )}
+                          </div>
+                        </div>
                       </motion.div>
                     ))}
                   </div>
