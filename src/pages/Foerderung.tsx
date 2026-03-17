@@ -1,18 +1,23 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Layout from "@/components/layout/Layout";
-import { ExternalLink, Calendar, Euro, Search, ArrowRight } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { ExternalLink, Calendar, Euro, Search, ArrowRight, Lightbulb } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useCMSContent } from "@/hooks/useCMSContent";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Skeleton } from "@/components/ui/skeleton";
+import foerderungHero from "@/assets/foerderung-hero.jpg";
 
 const categories = ["Alle", "Stiftungen", "Öffentlich", "Stipendien", "Ausschreibungen"];
+
+const categoryBadgeStyles: Record<string, string> = {
+  Stiftungen: "border-primary/30 text-primary bg-primary/10",
+  "Öffentlich": "border-accent text-accent-foreground bg-accent/30",
+  Stipendien: "border-secondary-foreground/30 text-secondary-foreground bg-secondary/30",
+  Ausschreibungen: "border-destructive/30 text-destructive bg-destructive/10",
+};
 
 const foerderungen = [
   {
@@ -89,6 +94,7 @@ interface FoerderNews {
 export default function Foerderung() {
   const [selectedCategory, setSelectedCategory] = useState("Alle");
   const [searchQuery, setSearchQuery] = useState("");
+  const [isFocused, setIsFocused] = useState(false);
   const [foerderNews, setFoerderNews] = useState<FoerderNews[]>([]);
   const [isLoadingNews, setIsLoadingNews] = useState(true);
   const { content: heroContent } = useCMSContent("foerderung_hero");
@@ -103,8 +109,7 @@ export default function Foerderung() {
           .eq("is_published", true)
           .eq("category", "foerderung")
           .order("published_at", { ascending: false })
-          .limit(5);
-
+          .limit(3);
         if (error) throw error;
         setFoerderNews(data || []);
       } catch (error) {
@@ -113,141 +118,167 @@ export default function Foerderung() {
         setIsLoadingNews(false);
       }
     }
-
     fetchFoerderNews();
   }, []);
 
   const filteredFoerderungen = foerderungen.filter((item) => {
     const matchesCategory = selectedCategory === "Alle" || item.category === selectedCategory;
-    const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         item.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const q = searchQuery.toLowerCase();
+    const matchesSearch = item.title.toLowerCase().includes(q) || item.description.toLowerCase().includes(q);
     return matchesCategory && matchesSearch;
   });
 
   return (
     <Layout>
       {/* Hero */}
-      <section className="py-16 lg:py-24 bg-gradient-section">
-        <div className="container">
-          <motion.div
+      <section className="relative min-h-[50vh] flex items-end overflow-hidden">
+        <img src={foerderungHero} alt="Förderung" className="absolute inset-0 w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-t from-foreground via-foreground/50 to-foreground/10" />
+
+        <div className="container relative z-10 pb-14 pt-36">
+          <motion.span
+            className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase bg-primary/90 text-primary-foreground mb-5"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="max-w-3xl"
+            transition={{ duration: 0.5 }}
           >
-            <h1 className="font-display text-4xl font-bold text-foreground sm:text-5xl">
-              {heroContent.title}
-            </h1>
-            <p className="mt-6 text-lg text-muted-foreground leading-relaxed">
-              {heroContent.subtitle}
-            </p>
-          </motion.div>
+            Förderung
+          </motion.span>
+          <motion.h1
+            className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-background tracking-tight leading-[1.1]"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+          >
+            {heroContent.title || "Förderung & Finanzierung"}
+          </motion.h1>
+          <motion.p
+            className="mt-4 text-lg text-background/60 max-w-xl"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.2 }}
+          >
+            {heroContent.subtitle || "Fördermöglichkeiten, Stipendien und Ausschreibungen für Kulturschaffende in Braunschweig und Niedersachsen."}
+          </motion.p>
         </div>
       </section>
 
-      {/* Quick Tips */}
-      <section className="py-8 bg-accent/20 border-b border-border">
+      {/* Tipp Banner */}
+      <section className="py-4 bg-primary/5 border-b border-primary/10">
         <div className="container">
-          <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
-            <span className="font-display font-semibold text-foreground">{tippContent.title}:</span>
-            <p className="text-muted-foreground">
+          <div className="flex items-center gap-3 text-sm">
+            <Lightbulb className="h-4 w-4 text-primary shrink-0" />
+            <span className="font-medium text-foreground">{tippContent.title}:</span>
+            <span className="text-muted-foreground">
               {tippContent.subtitle}
               {tippContent.cta_link && tippContent.cta_text && (
-                <Link to={tippContent.cta_link} className="text-primary hover:underline ml-1">
+                <Link to={tippContent.cta_link} className="text-primary hover:underline ml-1 font-medium">
                   {tippContent.cta_text}
                 </Link>
               )}
-            </p>
+            </span>
           </div>
         </div>
       </section>
 
       {/* Filters */}
-      <section className="py-8 bg-background border-b border-border">
+      <section className="py-6 bg-background border-b border-border/50 sticky top-0 z-30 backdrop-blur-md bg-background/90">
         <div className="container">
-          <div className="flex flex-col lg:flex-row gap-6">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex flex-wrap gap-2">
-              {categories.map((category) => (
-                <Button
-                  key={category}
-                  variant={selectedCategory === category ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedCategory(category)}
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
                   className={cn(
-                    selectedCategory === category && "bg-gradient-hero hover:opacity-90"
+                    "px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200",
+                    selectedCategory === cat
+                      ? "bg-primary text-primary-foreground shadow-md"
+                      : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
                   )}
                 >
-                  {category}
-                </Button>
+                  {cat}
+                </button>
               ))}
             </div>
 
-            <div className="relative max-w-sm w-full lg:ml-auto">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Förderung suchen..."
+            <div
+              className={cn(
+                "flex items-center gap-2 rounded-full border bg-card px-4 py-2 max-w-sm w-full transition-all duration-300",
+                isFocused ? "border-primary/50 shadow-[0_0_0_3px_hsl(var(--primary)/0.1)]" : "border-border"
+              )}
+            >
+              <Search className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+              <input
+                placeholder="Förderung suchen…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
+                className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none py-0.5"
               />
             </div>
           </div>
         </div>
       </section>
 
-      {/* Förder-News Section */}
+      {/* Förder-News */}
       {(isLoadingNews || foerderNews.length > 0) && (
-        <section className="py-12 bg-muted/30 border-b border-border">
+        <section className="py-14 bg-muted/20">
           <div className="container">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-8">
               <h2 className="font-display text-2xl font-bold text-foreground">Aktuelle Fördernews</h2>
-              <Link to="/news" className="text-primary hover:underline text-sm flex items-center gap-1">
-                Alle News <ArrowRight className="h-4 w-4" />
+              <Link
+                to="/news"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium text-primary hover:bg-primary/5 transition-colors"
+              >
+                Alle News
+                <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </div>
-            
+
             {isLoadingNews ? (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-5 md:grid-cols-3">
                 {[1, 2, 3].map((i) => (
-                  <Card key={i}>
-                    <CardHeader className="pb-2">
-                      <Skeleton className="h-5 w-3/4" />
-                    </CardHeader>
-                    <CardContent>
-                      <Skeleton className="h-4 w-full mb-2" />
-                      <Skeleton className="h-4 w-2/3" />
-                    </CardContent>
-                  </Card>
+                  <div key={i} className="rounded-2xl border border-border/50 bg-card p-6">
+                    <Skeleton className="h-4 w-20 mb-3" />
+                    <Skeleton className="h-5 w-3/4 mb-2" />
+                    <Skeleton className="h-4 w-full" />
+                  </div>
                 ))}
               </div>
             ) : (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {foerderNews.map((news) => (
-                  <Link key={news.id} to={`/news/${news.slug}`} className="group">
-                    <Card className="h-full hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300">
-                      <CardHeader className="pb-2">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Badge variant="outline" className="border-warning text-warning">Fördernews</Badge>
+              <div className="grid gap-5 md:grid-cols-3">
+                {foerderNews.map((news, index) => (
+                  <motion.div
+                    key={news.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: index * 0.08 }}
+                  >
+                    <Link to={`/news/${news.slug}`} className="group block h-full">
+                      <div className="h-full rounded-2xl border border-border/50 bg-card hover:border-primary/30 hover:shadow-glow transition-all duration-300 p-6">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Badge variant="outline" className="border-warning/30 text-warning bg-warning/10 text-xs">
+                            Fördernews
+                          </Badge>
                           <span className="text-xs text-muted-foreground">
                             {new Date(news.published_at || news.created_at).toLocaleDateString("de-DE")}
                           </span>
                         </div>
-                        <CardTitle className="text-lg group-hover:text-primary transition-colors line-clamp-2">
+                        <h3 className="font-display text-lg font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2 mb-2">
                           {news.title}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-muted-foreground line-clamp-2">
+                        </h3>
+                        <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
                           {news.excerpt || "Lesen Sie mehr..."}
                         </p>
-                      </CardContent>
-                      <CardFooter className="pt-0">
-                        <span className="text-sm font-medium text-primary flex items-center gap-1 group-hover:gap-2 transition-all">
-                          Weiterlesen <ArrowRight className="h-4 w-4" />
+                        <span className="inline-flex items-center gap-1.5 text-sm font-medium text-primary opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
+                          Weiterlesen
+                          <ArrowRight className="h-3.5 w-3.5" />
                         </span>
-                      </CardFooter>
-                    </Card>
-                  </Link>
+                      </div>
+                    </Link>
+                  </motion.div>
                 ))}
               </div>
             )}
@@ -257,69 +288,76 @@ export default function Foerderung() {
 
       {/* Funding List */}
       <section className="py-16 lg:py-24 bg-background">
-        <div className="container">
-          <div className="space-y-6">
+        <div className="container max-w-4xl">
+          <div className="space-y-4">
             {filteredFoerderungen.map((item, index) => (
               <motion.div
                 key={item.id}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: index * 0.08 }}
+                transition={{ duration: 0.4, delay: index * 0.06 }}
               >
-                <Card className={cn(
-                  "border-border/50 hover:shadow-card transition-all duration-300",
-                  item.highlight && "ring-2 ring-primary/20"
-                )}>
-                  <CardHeader className="pb-3">
-                    <div className="flex flex-col lg:flex-row lg:items-start gap-4">
-                      <div className="flex-1">
-                        <div className="flex flex-wrap items-center gap-2 mb-3">
-                          <Badge variant="outline">{item.category}</Badge>
-                          {item.highlight && (
-                            <Badge className="bg-primary text-primary-foreground">Empfohlen</Badge>
-                          )}
-                        </div>
-                        <CardTitle className="font-display text-xl mb-2">
-                          {item.title}
-                        </CardTitle>
-                        <p className="text-muted-foreground">
-                          {item.description}
-                        </p>
+                <div
+                  className={cn(
+                    "group rounded-2xl border bg-card hover:border-primary/30 hover:shadow-glow transition-all duration-300 p-5 sm:p-6",
+                    item.highlight ? "border-primary/20 ring-1 ring-primary/10" : "border-border/50"
+                  )}
+                >
+                  <div className="flex flex-col lg:flex-row lg:items-start gap-5">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                        <Badge
+                          variant="outline"
+                          className={cn("text-xs font-medium", categoryBadgeStyles[item.category] || "border-border")}
+                        >
+                          {item.category}
+                        </Badge>
+                        {item.highlight && (
+                          <Badge className="bg-primary/10 text-primary border border-primary/20 text-xs">
+                            Empfohlen
+                          </Badge>
+                        )}
                       </div>
-                      <a 
-                        href={item.link} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="shrink-0"
-                      >
-                        <Button className="bg-gradient-hero hover:opacity-90">
-                          Zur Website
-                          <ExternalLink className="ml-2 h-4 w-4" />
-                        </Button>
-                      </a>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="flex flex-wrap gap-6 text-sm">
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Calendar className="h-4 w-4 text-primary" />
-                        <span><strong>Frist:</strong> {item.deadline}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Euro className="h-4 w-4 text-primary" />
-                        <span><strong>Fördervolumen:</strong> {item.amount}</span>
+                      <h3 className="font-display text-xl font-semibold text-foreground group-hover:text-primary transition-colors mb-2">
+                        {item.title}
+                      </h3>
+                      <p className="text-muted-foreground text-sm leading-relaxed mb-4">
+                        {item.description}
+                      </p>
+                      <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+                        <span className="flex items-center gap-1.5 text-muted-foreground">
+                          <Calendar className="h-3.5 w-3.5 text-primary" />
+                          <span className="font-medium text-foreground">{item.deadline}</span>
+                        </span>
+                        <span className="flex items-center gap-1.5 text-muted-foreground">
+                          <Euro className="h-3.5 w-3.5 text-primary" />
+                          <span className="font-medium text-foreground">{item.amount}</span>
+                        </span>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
+                    <a
+                      href={item.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold bg-primary text-primary-foreground hover:opacity-90 transition-opacity shrink-0"
+                    >
+                      Zur Website
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </a>
+                  </div>
+                </div>
               </motion.div>
             ))}
           </div>
 
           {filteredFoerderungen.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">Keine Förderungen gefunden.</p>
-            </div>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center py-20">
+              <div className="w-20 h-20 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-6">
+                <Search className="h-10 w-10 text-muted-foreground/50" />
+              </div>
+              <h2 className="font-display text-2xl font-semibold text-foreground mb-3">Keine Förderungen gefunden</h2>
+              <p className="text-muted-foreground">Versuchen Sie eine andere Suche oder Kategorie.</p>
+            </motion.div>
           )}
         </div>
       </section>
