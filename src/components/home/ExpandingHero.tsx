@@ -127,7 +127,7 @@ export default function ExpandingHero() {
             transition={{ duration: 1, delay: 0.3, ease: [0.25, 0.1, 0, 1] }}
           >
             <motion.div
-              className="inline-flex items-center gap-2 rounded-full bg-primary/20 backdrop-blur-md border border-primary/30 px-5 py-2 text-sm font-medium text-primary-foreground mb-8"
+              className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 px-5 py-2 text-sm font-medium text-white mb-8"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 0.6 }}
@@ -136,7 +136,7 @@ export default function ExpandingHero() {
               Für die Kultur in Braunschweig
             </motion.div>
 
-            <h1 className="font-display text-5xl sm:text-6xl lg:text-8xl font-bold text-primary-foreground leading-[0.95] tracking-tight max-w-5xl">
+            <h1 className="font-display text-5xl sm:text-6xl lg:text-8xl font-bold text-white leading-[0.95] tracking-tight max-w-5xl">
               <motion.span
                 initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -158,7 +158,7 @@ export default function ExpandingHero() {
             </h1>
 
             <motion.p
-              className="mt-8 text-lg lg:text-xl text-primary-foreground/70 leading-relaxed max-w-2xl"
+              className="mt-8 text-lg lg:text-xl text-white/70 leading-relaxed max-w-2xl"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.9 }}
