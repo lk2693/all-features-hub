@@ -158,7 +158,7 @@ export default function ExpandingHero() {
             </h1>
 
             <motion.p
-              className="mt-8 text-lg lg:text-xl text-primary-foreground/70 leading-relaxed max-w-2xl"
+              className="mt-8 text-lg lg:text-xl text-white/70 leading-relaxed max-w-2xl"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.9 }}
