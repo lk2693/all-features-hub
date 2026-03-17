@@ -181,7 +181,7 @@ export default function ExpandingHero() {
               <Button
                 size="lg"
                 variant="outline"
-                className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 backdrop-blur-sm text-lg px-8 py-6"
+                className="border-white/40 text-white hover:bg-white/15 backdrop-blur-sm text-lg px-8 py-6"
                 asChild
               >
                 <Link to="/ueber-uns">Mehr erfahren</Link>
