@@ -1,6 +1,11 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowRight, Target, FileCheck, Megaphone, Palette } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Target, FileCheck, Megaphone, Palette } from "lucide-react";
+
+import agKulturpolitik from "@/assets/ag-kulturpolitik.jpg";
+import agFoerderung from "@/assets/ag-foerderung.jpg";
+import agOeffentlichkeit from "@/assets/ag-oeffentlichkeit.jpg";
+import agRessourcen from "@/assets/ag-ressourcen.jpg";
 
 const workingGroups = [
   {
@@ -8,24 +13,28 @@ const workingGroups = [
     name: "AG Kulturpolitik",
     desc: "Stellungnahmen & politische Vertretung",
     members: 12,
+    image: agKulturpolitik,
   },
   {
     icon: FileCheck,
     name: "AG Förderung",
     desc: "Förderinfos & Antrags-Workshops",
     members: 8,
+    image: agFoerderung,
   },
   {
     icon: Megaphone,
     name: "AG Öffentlichkeitsarbeit",
     desc: "Website, Social Media & PR",
     members: 6,
+    image: agOeffentlichkeit,
   },
   {
     icon: Palette,
     name: "AG Ressourcen",
     desc: "Ressourcenpool & neue Angebote",
     members: 5,
+    image: agRessourcen,
   },
 ];
 
@@ -58,29 +67,43 @@ export default function WorkingGroupsSection() {
           </Link>
         </motion.div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {workingGroups.map((ag, index) => (
             <motion.div
               key={ag.name}
-              initial={{ opacity: 0, y: 25 }}
+              initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: index * 0.08 }}
+              transition={{ duration: 0.5, delay: index * 0.08 }}
             >
               <Link
                 to="/mitmachen"
-                className="group block h-full p-6 rounded-2xl border border-border/50 bg-card hover:border-primary/30 hover:shadow-glow transition-all duration-300"
+                className="group block h-full rounded-2xl overflow-hidden border border-border/50 bg-card hover:border-primary/30 hover:shadow-glow transition-all duration-300"
               >
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-                  <ag.icon className="h-5 w-5 text-primary" />
+                {/* Image */}
+                <div className="aspect-[4/3] overflow-hidden">
+                  <img
+                    src={ag.image}
+                    alt={ag.name}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    loading="lazy"
+                  />
                 </div>
-                <h3 className="font-display text-lg font-semibold text-foreground group-hover:text-primary transition-colors mb-1">
-                  {ag.name}
-                </h3>
-                <p className="text-sm text-muted-foreground mb-4">{ag.desc}</p>
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <span className="font-display font-bold text-primary text-base">{ag.members}</span>
-                  Mitglieder
+
+                {/* Content */}
+                <div className="p-5">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <ag.icon className="h-4 w-4 text-primary" />
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      <span className="font-display font-bold text-primary text-sm">{ag.members}</span> Mitglieder
+                    </span>
+                  </div>
+                  <h3 className="font-display text-lg font-semibold text-foreground group-hover:text-primary transition-colors mb-1">
+                    {ag.name}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">{ag.desc}</p>
                 </div>
               </Link>
             </motion.div>
