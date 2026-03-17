@@ -136,7 +136,7 @@ export default function ExpandingHero() {
               Für die Kultur in Braunschweig
             </motion.div>
 
-            <h1 className="font-display text-5xl sm:text-6xl lg:text-8xl font-bold text-primary-foreground leading-[0.95] tracking-tight max-w-5xl">
+            <h1 className="font-display text-5xl sm:text-6xl lg:text-8xl font-bold text-white leading-[0.95] tracking-tight max-w-5xl">
               <motion.span
                 initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
