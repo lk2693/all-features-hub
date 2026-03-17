@@ -2,16 +2,14 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Layout from "@/components/layout/Layout";
 import { Link } from "react-router-dom";
-import { Search, Filter, Monitor, Home, Lightbulb, Music, Camera, Wrench, MapPin, User, ArrowRight, Plus, Loader2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Search, Monitor, Home, Lightbulb, Music, Camera, Wrench, MapPin, User, ArrowRight, Plus, Loader2, Mail } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import ressourcenHero from "@/assets/ressourcen-hero.jpg";
 
 const categories = [
-  { id: "alle", label: "Alle", icon: Filter },
+  { id: "alle", label: "Alle", icon: null },
   { id: "technik", label: "Technik", icon: Monitor },
   { id: "raeume", label: "Räume", icon: Home },
   { id: "knowhow", label: "Know-how", icon: Lightbulb },
@@ -19,6 +17,24 @@ const categories = [
   { id: "medien", label: "Medien", icon: Camera },
   { id: "werkzeuge", label: "Werkzeuge", icon: Wrench },
 ];
+
+const categoryIconMap: Record<string, React.ElementType> = {
+  technik: Monitor,
+  raeume: Home,
+  knowhow: Lightbulb,
+  instrumente: Music,
+  medien: Camera,
+  werkzeuge: Wrench,
+};
+
+const categoryStyles: Record<string, string> = {
+  technik: "bg-primary/10 text-primary",
+  raeume: "bg-accent/30 text-accent-foreground",
+  knowhow: "bg-secondary text-secondary-foreground",
+  instrumente: "bg-primary/10 text-primary",
+  medien: "bg-accent/30 text-accent-foreground",
+  werkzeuge: "bg-secondary text-secondary-foreground",
+};
 
 interface Resource {
   id: string;
@@ -29,108 +45,123 @@ interface Resource {
   provider_email: string;
   location: string;
   is_available: boolean;
-  
 }
-
-const getCategoryIcon = (categoryId: string) => {
-  const cat = categories.find((c) => c.id === categoryId);
-  return cat?.icon || Filter;
-};
 
 export default function Ressourcen() {
   const [selectedCategory, setSelectedCategory] = useState("alle");
   const [searchQuery, setSearchQuery] = useState("");
+  const [isFocused, setIsFocused] = useState(false);
   const [resources, setResources] = useState<Resource[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    async function fetchResources() {
+      const { data, error } = await supabase
+        .from("resources")
+        .select("id, title, description, category, provider_name, provider_email, location, is_available")
+        .eq("is_approved", true)
+        .order("created_at", { ascending: false });
+      if (error) console.error("Error fetching resources:", error);
+      else setResources(data || []);
+      setIsLoading(false);
+    }
     fetchResources();
   }, []);
 
-  const fetchResources = async () => {
-    setIsLoading(true);
-    const { data, error } = await supabase
-      .from("resources")
-      .select("id, title, description, category, provider_name, provider_email, location, is_available")
-      .eq("is_approved", true)
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("Error fetching resources:", error);
-    } else {
-      setResources(data || []);
-    }
-    setIsLoading(false);
-  };
-
-  const filteredResources = resources.filter((resource) => {
-    const matchesCategory = selectedCategory === "alle" || resource.category === selectedCategory;
-    const matchesSearch = resource.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         resource.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         resource.provider_name.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredResources = resources.filter((r) => {
+    const matchesCategory = selectedCategory === "alle" || r.category === selectedCategory;
+    const q = searchQuery.toLowerCase();
+    const matchesSearch = r.title.toLowerCase().includes(q) || r.description.toLowerCase().includes(q) || r.provider_name.toLowerCase().includes(q);
     return matchesCategory && matchesSearch;
   });
 
   return (
     <Layout>
       {/* Hero */}
-      <section className="py-16 lg:py-24 bg-gradient-section">
-        <div className="container">
+      <section className="relative min-h-[50vh] flex items-end overflow-hidden">
+        <img src={ressourcenHero} alt="Ressourcenpool" className="absolute inset-0 w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-t from-foreground via-foreground/50 to-foreground/10" />
+
+        <div className="container relative z-10 pb-14 pt-36">
+          <motion.span
+            className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase bg-primary/90 text-primary-foreground mb-5"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            Teilen & Nutzen
+          </motion.span>
+          <motion.h1
+            className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-background tracking-tight leading-[1.1]"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+          >
+            Ressourcenpool
+          </motion.h1>
+          <motion.p
+            className="mt-4 text-lg text-background/60 max-w-xl"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.2 }}
+          >
+            Finde und teile Ressourcen mit anderen Kulturschaffenden – von Technik über Räume bis zu Know-how.
+          </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6"
+            transition={{ duration: 0.7, delay: 0.3 }}
+            className="mt-8"
           >
-            <div className="max-w-3xl">
-              <h1 className="font-display text-4xl font-bold text-foreground sm:text-5xl">
-                Ressourcenpool
-              </h1>
-              <p className="mt-6 text-lg text-muted-foreground leading-relaxed">
-                Finde und teile Ressourcen mit anderen Kulturschaffenden – von Technik über Räume bis zu Know-how und Werkzeugen.
-              </p>
-            </div>
-            <Button className="bg-gradient-hero hover:opacity-90 shrink-0" asChild>
-              <Link to="/ressourcen/eintragen">
-                <Plus className="mr-2 h-4 w-4" />
-                Ressource eintragen
-              </Link>
-            </Button>
+            <Link
+              to="/ressourcen/eintragen"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold bg-background text-foreground hover:bg-background/90 transition-colors"
+            >
+              <Plus className="h-4 w-4" />
+              Ressource eintragen
+            </Link>
           </motion.div>
         </div>
       </section>
 
       {/* Filters */}
-      <section className="py-8 bg-background border-b border-border">
+      <section className="py-6 bg-background border-b border-border/50 sticky top-0 z-30 backdrop-blur-md bg-background/90">
         <div className="container">
-          <div className="flex flex-col lg:flex-row gap-6">
-            {/* Category filters */}
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            {/* Category Pills */}
             <div className="flex flex-wrap gap-2">
-              {categories.map((category) => (
-                <Button
-                  key={category.id}
-                  variant={selectedCategory === category.id ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedCategory(category.id)}
+              {categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.id)}
                   className={cn(
-                    "gap-2",
-                    selectedCategory === category.id && "bg-gradient-hero hover:opacity-90"
+                    "inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200",
+                    selectedCategory === cat.id
+                      ? "bg-primary text-primary-foreground shadow-md"
+                      : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
                   )}
                 >
-                  <category.icon className="h-4 w-4" />
-                  {category.label}
-                </Button>
+                  {cat.icon && <cat.icon className="h-3.5 w-3.5" />}
+                  {cat.label}
+                </button>
               ))}
             </div>
 
             {/* Search */}
-            <div className="relative max-w-sm w-full lg:ml-auto">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Ressourcen suchen..."
+            <div
+              className={cn(
+                "flex items-center gap-2 rounded-full border bg-card px-4 py-2 max-w-sm w-full transition-all duration-300",
+                isFocused ? "border-primary/50 shadow-[0_0_0_3px_hsl(var(--primary)/0.1)]" : "border-border"
+              )}
+            >
+              <Search className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+              <input
+                placeholder="Ressourcen suchen…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
+                className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none py-0.5"
               />
             </div>
           </div>
@@ -141,78 +172,93 @@ export default function Ressourcen() {
       <section className="py-16 lg:py-24 bg-background">
         <div className="container">
           {isLoading ? (
-            <div className="flex items-center justify-center py-12">
+            <div className="flex flex-col items-center justify-center py-20 gap-3">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <p className="text-sm text-muted-foreground">Ressourcen werden geladen…</p>
             </div>
           ) : filteredResources.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground mb-4">
-                {resources.length === 0 
-                  ? "Noch keine Ressourcen vorhanden." 
-                  : "Keine Ressourcen gefunden."}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center py-20">
+              <div className="w-20 h-20 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-6">
+                <Search className="h-10 w-10 text-muted-foreground/50" />
+              </div>
+              <h2 className="font-display text-2xl font-semibold text-foreground mb-3">
+                {resources.length === 0 ? "Noch keine Ressourcen vorhanden" : "Keine Ressourcen gefunden"}
+              </h2>
+              <p className="text-muted-foreground max-w-md mx-auto mb-6">
+                {resources.length === 0
+                  ? "Tragen Sie die erste Ressource ein und helfen Sie der Community!"
+                  : "Versuchen Sie eine andere Suche oder Kategorie."}
               </p>
-              <Button asChild>
-                <Link to="/ressourcen/eintragen">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Erste Ressource eintragen
-                </Link>
-              </Button>
-            </div>
+              <Link
+                to="/ressourcen/eintragen"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+              >
+                <Plus className="h-4 w-4" />
+                Ressource eintragen
+              </Link>
+            </motion.div>
           ) : (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               {filteredResources.map((resource, index) => {
-                const IconComponent = getCategoryIcon(resource.category);
+                const IconComponent = categoryIconMap[resource.category] || Monitor;
                 return (
                   <motion.div
                     key={resource.id}
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 25 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: index * 0.08 }}
+                    transition={{ duration: 0.5, delay: index * 0.06 }}
                   >
-                    <Card className="h-full flex flex-col border-border/50 hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300 group overflow-hidden">
-                      <CardHeader className="pb-3">
-                        <div className="flex items-start justify-between gap-4 mb-3">
-                          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                            <IconComponent className="h-5 w-5 text-primary" />
+                    <div className="group h-full flex flex-col rounded-2xl border border-border/50 bg-card hover:border-primary/30 hover:shadow-glow transition-all duration-300 overflow-hidden">
+                      {/* Header with icon */}
+                      <div className="p-6 pb-4">
+                        <div className="flex items-start justify-between gap-3 mb-4">
+                          <div className={cn("w-11 h-11 rounded-xl flex items-center justify-center", categoryStyles[resource.category] || "bg-primary/10 text-primary")}>
+                            <IconComponent className="h-5 w-5" />
                           </div>
-                          <Badge 
-                            variant={resource.is_available ? "default" : "secondary"}
+                          <Badge
+                            variant="outline"
                             className={cn(
-                              resource.is_available ? "bg-secondary text-secondary-foreground" : "bg-muted text-muted-foreground"
+                              "text-xs font-medium",
+                              resource.is_available
+                                ? "border-primary/30 text-primary bg-primary/10"
+                                : "border-muted-foreground/30 text-muted-foreground bg-muted/50"
                             )}
                           >
                             {resource.is_available ? "Verfügbar" : "Ausgeliehen"}
                           </Badge>
                         </div>
-                        <CardTitle className="font-display text-lg group-hover:text-primary transition-colors">
+                        <h3 className="font-display text-lg font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2">
                           {resource.title}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="flex-1 flex flex-col">
-                        <p className="text-muted-foreground text-sm mb-4 flex-1 line-clamp-3">
+                        </h3>
+                        <p className="text-sm text-muted-foreground mt-2 line-clamp-3">
                           {resource.description}
                         </p>
-                        <div className="space-y-2 text-sm text-muted-foreground pt-4 border-t border-border">
-                          <div className="flex items-center gap-2">
-                            <User className="h-4 w-4 shrink-0" />
+                      </div>
+
+                      {/* Footer */}
+                      <div className="mt-auto px-6 pb-6">
+                        <div className="flex flex-col gap-1.5 text-sm text-muted-foreground pb-4 border-b border-border/50">
+                          <span className="flex items-center gap-2">
+                            <User className="h-3.5 w-3.5 shrink-0" />
                             <span className="truncate">{resource.provider_name}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4 shrink-0" />
+                          </span>
+                          <span className="flex items-center gap-2">
+                            <MapPin className="h-3.5 w-3.5 shrink-0" />
                             <span className="truncate">{resource.location}</span>
-                          </div>
+                          </span>
                         </div>
-                        <a 
+                        <a
                           href={`mailto:${resource.provider_email}?subject=Anfrage: ${encodeURIComponent(resource.title)}`}
-                          className="mt-4"
+                          className="flex items-center justify-between pt-4 text-sm font-medium text-primary opacity-80 group-hover:opacity-100 transition-opacity"
                         >
-                          <Button variant="ghost" className="w-full justify-between group-hover:text-primary">
+                          <span className="flex items-center gap-1.5">
+                            <Mail className="h-3.5 w-3.5" />
                             Kontakt aufnehmen
-                            <ArrowRight className="h-4 w-4" />
-                          </Button>
+                          </span>
+                          <ArrowRight className="h-4 w-4" />
                         </a>
-                      </CardContent>
-                    </Card>
+                      </div>
+                    </div>
                   </motion.div>
                 );
               })}

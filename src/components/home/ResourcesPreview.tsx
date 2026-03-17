@@ -1,67 +1,16 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight, Monitor, Home, Lightbulb, Music, Camera, Wrench } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 const resourceCategories = [
-  {
-    title: "Technik",
-    description: "Beamer, Licht, Sound und mehr",
-    icon: Monitor,
-    count: 24,
-    color: "bg-primary/10 text-primary",
-  },
-  {
-    title: "Räume",
-    description: "Probe-, Aufführungs- und Atelierräume",
-    icon: Home,
-    count: 18,
-    color: "bg-accent/20 text-accent-foreground",
-  },
-  {
-    title: "Know-how",
-    description: "Beratung, Workshops, Expertise",
-    icon: Lightbulb,
-    count: 32,
-    color: "bg-secondary text-secondary-foreground",
-  },
-  {
-    title: "Instrumente",
-    description: "Musikinstrumente zum Ausleihen",
-    icon: Music,
-    count: 15,
-    color: "bg-primary/10 text-primary",
-  },
-  {
-    title: "Medien",
-    description: "Foto- und Videoequipment",
-    icon: Camera,
-    count: 12,
-    color: "bg-accent/20 text-accent-foreground",
-  },
-  {
-    title: "Werkzeuge",
-    description: "Handwerk und Aufbau",
-    icon: Wrench,
-    count: 8,
-    color: "bg-secondary text-secondary-foreground",
-  },
+  { title: "Technik", description: "Beamer, Licht, Sound und mehr", icon: Monitor, count: 24, style: "bg-primary/10 text-primary" },
+  { title: "Räume", description: "Probe-, Aufführungs- und Atelierräume", icon: Home, count: 18, style: "bg-accent/30 text-accent-foreground" },
+  { title: "Know-how", description: "Beratung, Workshops, Expertise", icon: Lightbulb, count: 32, style: "bg-secondary text-secondary-foreground" },
+  { title: "Instrumente", description: "Musikinstrumente zum Ausleihen", icon: Music, count: 15, style: "bg-primary/10 text-primary" },
+  { title: "Medien", description: "Foto- und Videoequipment", icon: Camera, count: 12, style: "bg-accent/30 text-accent-foreground" },
+  { title: "Werkzeuge", description: "Handwerk und Aufbau", icon: Wrench, count: 8, style: "bg-secondary text-secondary-foreground" },
 ];
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.08 },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, scale: 0.95 },
-  visible: { opacity: 1, scale: 1, transition: { duration: 0.4 } },
-};
 
 export default function ResourcesPreview() {
   return (
@@ -72,68 +21,62 @@ export default function ResourcesPreview() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center max-w-2xl mx-auto mb-12"
+          className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-12"
         >
-          <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
-            Ressourcenpool
-          </h2>
-          <p className="mt-4 text-lg text-muted-foreground">
-            Finde und teile Ressourcen mit anderen Kulturschaffenden – von Technik über Räume bis zu Know-how.
-          </p>
+          <div>
+            <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
+              Ressourcenpool
+            </h2>
+            <p className="mt-2 text-lg text-muted-foreground">
+              Finde und teile Ressourcen mit anderen Kulturschaffenden.
+            </p>
+          </div>
+          <div className="flex items-center gap-3 shrink-0">
+            <Link
+              to="/ressourcen/eintragen"
+              className="px-5 py-2.5 rounded-full text-sm font-medium border border-border text-foreground hover:bg-muted transition-colors"
+            >
+              Eintragen
+            </Link>
+            <Link
+              to="/ressourcen"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+            >
+              Alle Ressourcen
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
         </motion.div>
 
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
-        >
-          {resourceCategories.map((category) => (
-            <motion.div key={category.title} variants={itemVariants}>
-              <Link to={`/ressourcen?kategorie=${category.title.toLowerCase()}`} className="block group">
-                <Card className="h-full transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1 border-border/50">
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between">
-                      <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center", category.color)}>
-                        <category.icon className="h-5 w-5" />
-                      </div>
-                      <span className="text-2xl font-display font-bold text-primary">
-                        {category.count}
-                      </span>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <CardTitle className="font-display text-lg mb-1 group-hover:text-primary transition-colors">
-                      {category.title}
-                    </CardTitle>
-                    <p className="text-sm text-muted-foreground">
-                      {category.description}
-                    </p>
-                  </CardContent>
-                </Card>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {resourceCategories.map((cat, index) => (
+            <motion.div
+              key={cat.title}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: index * 0.07 }}
+            >
+              <Link
+                to={`/ressourcen?kategorie=${cat.title.toLowerCase()}`}
+                className="group flex items-center gap-4 p-5 rounded-2xl border border-border/50 bg-card hover:border-primary/30 hover:shadow-glow transition-all duration-300"
+              >
+                <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center shrink-0", cat.style)}>
+                  <cat.icon className="h-5 w-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-display font-semibold text-foreground group-hover:text-primary transition-colors">
+                    {cat.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground truncate">{cat.description}</p>
+                </div>
+                <span className="font-display text-2xl font-bold text-primary/60 group-hover:text-primary transition-colors shrink-0">
+                  {cat.count}
+                </span>
               </Link>
             </motion.div>
           ))}
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
-        >
-          <Button asChild className="bg-gradient-hero hover:opacity-90">
-            <Link to="/ressourcen">
-              Alle Ressourcen
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
-          <Button variant="outline" asChild>
-            <Link to="/ressourcen/eintragen">Ressource eintragen</Link>
-          </Button>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
