@@ -127,7 +127,7 @@ export default function ExpandingHero() {
             transition={{ duration: 1, delay: 0.3, ease: [0.25, 0.1, 0, 1] }}
           >
             <motion.div
-              className="inline-flex items-center gap-2 rounded-full bg-primary/20 backdrop-blur-md border border-primary/30 px-5 py-2 text-sm font-medium text-primary-foreground mb-8"
+              className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 px-5 py-2 text-sm font-medium text-white mb-8"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 0.6 }}
