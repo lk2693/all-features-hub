@@ -125,7 +125,7 @@ export default function Ressourcen() {
       </section>
 
       {/* Filters */}
-      <section className="py-6 bg-background border-b border-border/50 sticky top-0 z-30 backdrop-blur-md bg-background/90">
+      <section className="py-6 border-b border-border/50 sticky top-0 z-30 backdrop-blur-md bg-background/90">
         <div className="container">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             {/* Category Pills */}
