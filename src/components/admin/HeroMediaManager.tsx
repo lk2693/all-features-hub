@@ -40,10 +40,12 @@ function SortableMediaItem({
   item,
   id,
   onRemove,
+  onUpdate,
 }: {
   item: MediaItem;
   id: string;
   onRemove: () => void;
+  onUpdate: (patch: Partial<MediaItem>) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id });
@@ -56,50 +58,72 @@ function SortableMediaItem({
   };
 
   return (
-    <Card ref={setNodeRef} style={style} className="p-3 flex items-center gap-3">
-      <button
-        className="cursor-grab active:cursor-grabbing touch-none shrink-0 text-muted-foreground hover:text-foreground transition-colors"
-        {...attributes}
-        {...listeners}
-      >
-        <GripVertical className="h-4 w-4" />
-      </button>
+    <Card ref={setNodeRef} style={style} className="p-3 space-y-3">
+      <div className="flex items-center gap-3">
+        <button
+          className="cursor-grab active:cursor-grabbing touch-none shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical className="h-4 w-4" />
+        </button>
 
-      {/* Thumbnail */}
-      <div className="w-20 h-14 rounded overflow-hidden bg-muted shrink-0">
-        {item.type === "image" ? (
-          <img src={item.url} alt="" className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-muted">
-            <Film className="h-6 w-6 text-muted-foreground" />
-          </div>
-        )}
-      </div>
-
-      {/* Info */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
+        {/* Thumbnail */}
+        <div className="w-20 h-14 rounded overflow-hidden bg-muted shrink-0">
           {item.type === "image" ? (
-            <Image className="h-3.5 w-3.5 text-primary shrink-0" />
+            <img src={item.url} alt="" className="w-full h-full object-cover" />
           ) : (
-            <Film className="h-3.5 w-3.5 text-accent-foreground shrink-0" />
+            <div className="w-full h-full flex items-center justify-center bg-muted">
+              <Film className="h-6 w-6 text-muted-foreground" />
+            </div>
           )}
-          <span className="text-xs font-medium uppercase text-muted-foreground">
-            {item.type === "image" ? "Bild" : "Video"}
-          </span>
         </div>
-        <p className="text-xs text-muted-foreground truncate mt-0.5">{item.url}</p>
+
+        {/* Info */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            {item.type === "image" ? (
+              <Image className="h-3.5 w-3.5 text-primary shrink-0" />
+            ) : (
+              <Film className="h-3.5 w-3.5 text-accent-foreground shrink-0" />
+            )}
+            <span className="text-xs font-medium uppercase text-muted-foreground">
+              {item.type === "image" ? "Bild" : "Video"}
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground truncate mt-0.5">{item.url}</p>
+        </div>
+
+        {/* Remove */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 text-destructive hover:text-destructive shrink-0"
+          onClick={onRemove}
+        >
+          <X className="h-3.5 w-3.5" />
+        </Button>
       </div>
 
-      {/* Remove */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-7 w-7 text-destructive hover:text-destructive shrink-0"
-        onClick={onRemove}
-      >
-        <X className="h-3.5 w-3.5" />
-      </Button>
+      {/* Per-slide texts */}
+      <div className="grid sm:grid-cols-2 gap-2 pl-7">
+        <div className="space-y-1">
+          <Label className="text-xs">Überschrift (optional)</Label>
+          <Input
+            value={item.title ?? ""}
+            onChange={(e) => onUpdate({ title: e.target.value })}
+            placeholder="Eigene Überschrift für diesen Slide"
+          />
+        </div>
+        <div className="space-y-1">
+          <Label className="text-xs">Beschreibung (optional)</Label>
+          <Input
+            value={item.subtitle ?? ""}
+            onChange={(e) => onUpdate({ subtitle: e.target.value })}
+            placeholder="Eigener Beschreibungstext"
+          />
+        </div>
+      </div>
     </Card>
   );
 }
