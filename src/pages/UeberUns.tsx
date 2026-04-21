@@ -2,10 +2,10 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
-import { Target, FileText, Heart, Loader2, ArrowRight, Download, Handshake, Eye, Users2 } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useCMSContent } from "@/hooks/useCMSContent";
+import { FileText, Loader2, ArrowRight, Download } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
+import { getIcon } from "@/lib/iconMap";
 import ueberUnsHero from "@/assets/ueberuns-hero.jpg";
 
 interface VorstandMember {
@@ -18,54 +18,90 @@ interface VorstandMember {
   email: string | null;
 }
 
-const leitbildItems = [
-  {
-    icon: Heart,
-    title: "Kultur ist unverzichtbar",
-    text: "Kultur ist ein unverzichtbarer Teil unserer Gesellschaft",
-  },
-  {
-    icon: Users2,
-    title: "Vielfalt & Inklusion",
-    text: "Vielfalt und Inklusion prägen unser Handeln",
-  },
-  {
-    icon: Eye,
-    title: "Transparenz & Partizipation",
-    text: "Transparenz und Partizipation sind unsere Grundprinzipien",
-  },
-  {
-    icon: Handshake,
-    title: "Kooperation",
-    text: "Kooperation geht vor Konkurrenz",
-  },
-];
+interface AboutValueRow { id: string; title: string; description: string | null; icon: string | null; }
+interface AboutDocumentRow { id: string; title: string; description: string | null; file_url: string; icon: string | null; }
 
-export default function UeberUns() {
-  const { content: heroContent } = useCMSContent("ueberuns_hero");
-  const { content: missionContent } = useCMSContent("ueberuns_mission");
+export interface UeberUnsPreviewData {
+  hero?: { badge: string; title: string; subtitle: string; image_url: string };
+  mission?: { badge: string; title: string; content: string; cta_text: string; cta_link: string };
+  values?: AboutValueRow[];
+  vorstand_intro?: { badge: string; title: string; subtitle: string };
+  satzung?: { title: string; content: string };
+  documents?: AboutDocumentRow[];
+}
+
+interface CMSRow { block_key: string; title: string | null; subtitle: string | null; content: string | null; image_url: string | null; cta_text: string | null; cta_link: string | null; metadata: Record<string, unknown> | null; }
+
+export default function UeberUns({ previewData }: { previewData?: UeberUnsPreviewData } = {}) {
+  const [cmsMap, setCmsMap] = useState<Map<string, CMSRow>>(new Map());
+  const [values, setValues] = useState<AboutValueRow[]>([]);
+  const [documents, setDocuments] = useState<AboutDocumentRow[]>([]);
   const [vorstand, setVorstand] = useState<VorstandMember[]>([]);
   const [isLoadingVorstand, setIsLoadingVorstand] = useState(true);
 
   useEffect(() => {
-    async function fetchVorstand() {
+    if (previewData) return; // skip fetch in preview mode
+    async function load() {
       try {
-        const { data, error } = await supabase
-          .from("vorstand_members")
-          .select("*")
-          .eq("is_active", true)
-          .order("sort_order", { ascending: true });
-
-        if (error) throw error;
-        setVorstand((data || []) as unknown as VorstandMember[]);
+        const [cms, vals, docs, vors] = await Promise.all([
+          supabase.from("cms_content").select("block_key, title, subtitle, content, image_url, cta_text, cta_link, metadata")
+            .in("block_key", ["ueberuns_hero", "ueberuns_mission", "ueberuns_vorstand", "ueberuns_satzung"]),
+          supabase.from("about_values").select("id, title, description, icon, sort_order").eq("is_active", true).order("sort_order"),
+          supabase.from("about_documents").select("id, title, description, file_url, icon, sort_order").eq("is_active", true).order("sort_order"),
+          supabase.from("vorstand_members").select("*").eq("is_active", true).order("sort_order", { ascending: true }),
+        ]);
+        const map = new Map<string, CMSRow>();
+        (cms.data ?? []).forEach((r) => map.set(r.block_key, r as CMSRow));
+        setCmsMap(map);
+        setValues((vals.data ?? []) as AboutValueRow[]);
+        setDocuments((docs.data ?? []) as AboutDocumentRow[]);
+        setVorstand(((vors.data ?? []) as unknown) as VorstandMember[]);
       } catch (error) {
-        console.error("Error fetching vorstand:", error);
+        console.error("Error loading about page:", error);
       } finally {
         setIsLoadingVorstand(false);
       }
     }
-    fetchVorstand();
-  }, []);
+    load();
+  }, [previewData]);
+
+  // Resolve content with preview overrides taking priority.
+  const heroRow = cmsMap.get("ueberuns_hero");
+  const heroMeta = (heroRow?.metadata as Record<string, unknown> | null) ?? {};
+  const hero = previewData?.hero ?? {
+    badge: typeof heroMeta.badge === "string" ? heroMeta.badge : "Über uns",
+    title: heroRow?.title ?? "Wir gestalten Kultur in Braunschweig",
+    subtitle: heroRow?.subtitle ?? "",
+    image_url: heroRow?.image_url ?? "",
+  };
+  const heroBg = hero.image_url || ueberUnsHero;
+
+  const missionRow = cmsMap.get("ueberuns_mission");
+  const missionMeta = (missionRow?.metadata as Record<string, unknown> | null) ?? {};
+  const mission = previewData?.mission ?? {
+    badge: typeof missionMeta.badge === "string" ? missionMeta.badge : "Mission",
+    title: missionRow?.title ?? "Unsere Mission",
+    content: missionRow?.content ?? "",
+    cta_text: missionRow?.cta_text ?? "Mitglied werden",
+    cta_link: missionRow?.cta_link ?? "/mitmachen",
+  };
+
+  const vorstandRow = cmsMap.get("ueberuns_vorstand");
+  const vorstandMeta = (vorstandRow?.metadata as Record<string, unknown> | null) ?? {};
+  const vorstandIntro = previewData?.vorstand_intro ?? {
+    badge: typeof vorstandMeta.badge === "string" ? vorstandMeta.badge : "Team",
+    title: vorstandRow?.title ?? "Unser Vorstand",
+    subtitle: vorstandRow?.subtitle ?? "",
+  };
+
+  const satzungRow = cmsMap.get("ueberuns_satzung");
+  const satzung = previewData?.satzung ?? {
+    title: satzungRow?.title ?? "Satzung & Geschäftsordnung",
+    content: satzungRow?.content ?? "",
+  };
+
+  const valueItems = previewData?.values ?? values;
+  const documentItems = previewData?.documents ?? documents;
 
   function getInitials(name: string) {
     return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
@@ -76,7 +112,7 @@ export default function UeberUns() {
       {/* Hero – full-width image with overlay */}
       <section className="relative min-h-[70vh] flex items-end overflow-hidden">
         <img
-          src={ueberUnsHero}
+          src={heroBg}
           alt="Kulturrat Braunschweig Team"
           className="absolute inset-0 w-full h-full object-cover"
         />
@@ -89,7 +125,7 @@ export default function UeberUns() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            Über uns
+            {hero.badge}
           </motion.span>
           <motion.h1
             className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-background tracking-tight max-w-3xl leading-[1.1]"
@@ -97,7 +133,7 @@ export default function UeberUns() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.1 }}
           >
-            {heroContent.title}
+            {hero.title}
           </motion.h1>
           <motion.p
             className="mt-5 text-lg text-background/70 leading-relaxed max-w-2xl"
@@ -105,7 +141,7 @@ export default function UeberUns() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.25 }}
           >
-            {heroContent.subtitle}
+            {hero.subtitle}
           </motion.p>
         </div>
       </section>
@@ -122,21 +158,23 @@ export default function UeberUns() {
               transition={{ duration: 0.7 }}
             >
               <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase bg-primary/10 text-primary mb-5">
-                Mission
+                {mission.badge}
               </span>
               <h2 className="font-display text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
-                {missionContent.title}
+                {mission.title}
               </h2>
               <p className="mt-6 text-muted-foreground leading-relaxed text-lg">
-                {missionContent.content}
+                {mission.content}
               </p>
-              <Link
-                to="/mitmachen"
-                className="group inline-flex items-center gap-2 mt-8 text-sm font-semibold text-primary hover:text-primary/80 transition-colors"
-              >
-                Mitglied werden
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Link>
+              {mission.cta_text && (
+                <Link
+                  to={mission.cta_link || "/mitmachen"}
+                  className="group inline-flex items-center gap-2 mt-8 text-sm font-semibold text-primary hover:text-primary/80 transition-colors"
+                >
+                  {mission.cta_text}
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </Link>
+              )}
             </motion.div>
 
             {/* Leitbild grid */}
@@ -147,26 +185,29 @@ export default function UeberUns() {
               transition={{ duration: 0.7, delay: 0.15 }}
               className="grid grid-cols-1 sm:grid-cols-2 gap-5"
             >
-              {leitbildItems.map((item, i) => (
-                <motion.div
-                  key={item.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: 0.1 + i * 0.08 }}
-                  className="p-6 rounded-2xl border border-border/50 bg-card hover:border-primary/30 hover:shadow-glow transition-all duration-300"
-                >
-                  <div className="p-2.5 rounded-xl bg-primary/10 w-fit mb-4">
-                    <item.icon className="h-5 w-5 text-primary" />
-                  </div>
-                  <h3 className="font-display text-sm font-bold text-foreground mb-1.5">
-                    {item.title}
-                  </h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">
-                    {item.text}
-                  </p>
-                </motion.div>
-              ))}
+              {valueItems.map((item, i) => {
+                const Icon = getIcon(item.icon ?? "Sparkles");
+                return (
+                  <motion.div
+                    key={item.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: 0.1 + i * 0.08 }}
+                    className="p-6 rounded-2xl border border-border/50 bg-card hover:border-primary/30 hover:shadow-glow transition-all duration-300"
+                  >
+                    <div className="p-2.5 rounded-xl bg-primary/10 w-fit mb-4">
+                      <Icon className="h-5 w-5 text-primary" />
+                    </div>
+                    <h3 className="font-display text-sm font-bold text-foreground mb-1.5">
+                      {item.title}
+                    </h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                      {item.description}
+                    </p>
+                  </motion.div>
+                );
+              })}
             </motion.div>
           </div>
         </div>
@@ -183,13 +224,13 @@ export default function UeberUns() {
             className="mb-14"
           >
             <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase bg-primary/10 text-primary mb-5">
-              Team
+              {vorstandIntro.badge}
             </span>
             <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground tracking-tight">
-              Unser Vorstand
+              {vorstandIntro.title}
             </h2>
             <p className="mt-4 text-lg text-muted-foreground max-w-xl">
-              Ehrenamtlich engagiert für die Kulturszene Braunschweigs.
+              {vorstandIntro.subtitle}
             </p>
           </motion.div>
 
@@ -267,27 +308,32 @@ export default function UeberUns() {
               <FileText className="h-6 w-6 text-secondary-foreground" />
             </div>
             <h2 className="font-display text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
-              Satzung & Geschäftsordnung
+              {satzung.title}
             </h2>
             <p className="mt-4 text-muted-foreground leading-relaxed">
-              Die Satzung und Geschäftsordnung des Kulturrat Braunschweig e.V. regeln
-              unsere Arbeitsweise und Entscheidungsprozesse.
+              {satzung.content}
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center mt-8">
-              <a
-                href="#"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-foreground text-background px-7 py-3.5 text-sm font-semibold hover:bg-foreground/90 transition-colors"
-              >
-                <Download className="h-4 w-4" />
-                Satzung (PDF)
-              </a>
-              <a
-                href="#"
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-border px-7 py-3.5 text-sm font-semibold text-foreground hover:bg-muted transition-colors"
-              >
-                <Download className="h-4 w-4" />
-                Geschäftsordnung (PDF)
-              </a>
+              {documentItems.map((doc, i) => {
+                const Icon = getIcon(doc.icon ?? "Download");
+                const isPrimary = i === 0;
+                return (
+                  <a
+                    key={doc.id}
+                    href={doc.file_url || "#"}
+                    target={doc.file_url && doc.file_url !== "#" ? "_blank" : undefined}
+                    rel="noopener noreferrer"
+                    className={
+                      isPrimary
+                        ? "inline-flex items-center justify-center gap-2 rounded-full bg-foreground text-background px-7 py-3.5 text-sm font-semibold hover:bg-foreground/90 transition-colors"
+                        : "inline-flex items-center justify-center gap-2 rounded-full border border-border px-7 py-3.5 text-sm font-semibold text-foreground hover:bg-muted transition-colors"
+                    }
+                  >
+                    <Icon className="h-4 w-4" />
+                    {doc.title}
+                  </a>
+                );
+              })}
             </div>
           </motion.div>
         </div>
