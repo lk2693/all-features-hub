@@ -19,7 +19,13 @@ const defaultHeroImages = [
   "https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?w=1400&h=900&fit=crop",
 ];
 
-export default function ExpandingHero() {
+interface PreviewData {
+  title?: string | null;
+  subtitle?: string | null;
+  media?: MediaItem[] | null;
+}
+
+export default function ExpandingHero({ previewData }: { previewData?: PreviewData } = {}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -41,6 +47,8 @@ export default function ExpandingHero() {
   );
 
   useEffect(() => {
+    // Preview mode: skip DB fetch.
+    if (previewData) return;
     async function fetchHero() {
       try {
         const { data } = await supabase
@@ -63,21 +71,32 @@ export default function ExpandingHero() {
       }
     }
     fetchHero();
-  }, []);
+  }, [previewData]);
+
+  // Apply preview overrides
+  const effectiveTitle = previewData?.title ?? title;
+  const effectiveSubtitle = previewData?.subtitle ?? subtitle;
+  const effectiveMedia = (previewData?.media && previewData.media.length > 0)
+    ? previewData.media
+    : heroMedia;
 
   useEffect(() => {
-    if (heroMedia.length <= 1) return;
+    setCurrentIndex(0);
+  }, [previewData?.media]);
+
+  useEffect(() => {
+    if (effectiveMedia.length <= 1) return;
     const interval = setInterval(() => {
-      setCurrentIndex((p) => (p + 1) % heroMedia.length);
+      setCurrentIndex((p) => (p + 1) % effectiveMedia.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, [heroMedia.length]);
+  }, [effectiveMedia.length]);
 
-  const currentMedia = heroMedia[currentIndex];
+  const currentMedia = effectiveMedia[Math.min(currentIndex, Math.max(effectiveMedia.length - 1, 0))];
 
   // Per-slide overrides fall back to global title/subtitle
-  const activeTitle = currentMedia?.title?.trim() || title;
-  const activeSubtitle = currentMedia?.subtitle?.trim() || subtitle;
+  const activeTitle = currentMedia?.title?.trim() || effectiveTitle;
+  const activeSubtitle = currentMedia?.subtitle?.trim() || effectiveSubtitle;
 
   // Split title for gradient effect on last words
   const words = activeTitle.split(" ");
