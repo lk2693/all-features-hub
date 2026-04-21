@@ -176,7 +176,7 @@ function PreviewCanvas({
         }} />
       </div>
       <div ref={(el) => (sectionRefs.current.news = el)}>
-        <NewsSection previewData={{ intro: { title: data.news_intro.title, subtitle: data.news_intro.subtitle } }} />
+        <NewsSection previewData={{ intro: { title: data.news_intro.title, subtitle: data.news_intro.subtitle, image_url: data.news_intro.image_url } }} />
       </div>
       <div ref={(el) => (sectionRefs.current.working_groups = el)}>
         <WorkingGroupsSection previewData={{
@@ -185,7 +185,7 @@ function PreviewCanvas({
         }} />
       </div>
       <div ref={(el) => (sectionRefs.current.calendar = el)}>
-        <CalendarPreview previewData={{ intro: { title: data.calendar_intro.title, subtitle: data.calendar_intro.subtitle } }} />
+        <CalendarPreview previewData={{ intro: { title: data.calendar_intro.title, subtitle: data.calendar_intro.subtitle, image_url: data.calendar_intro.image_url } }} />
       </div>
       <div ref={(el) => (sectionRefs.current.resources = el)}>
         <ResourcesPreview previewData={{ intro: { title: data.resources_intro.title, subtitle: data.resources_intro.subtitle } }} />
