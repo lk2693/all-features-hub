@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-interface CMSContent {
+export interface CMSContent {
   title: string | null;
   subtitle: string | null;
   content: string | null;
   image_url: string | null;
   cta_text: string | null;
   cta_link: string | null;
+  metadata: Record<string, unknown> | null;
 }
 
 const defaultContent: Record<string, CMSContent> = {
@@ -18,6 +19,7 @@ const defaultContent: Record<string, CMSContent> = {
     image_url: null,
     cta_text: "Mehr erfahren",
     cta_link: "/ueber-uns",
+    metadata: null,
   },
   ueberuns_hero: {
     title: "Über den Kulturrat",
@@ -26,6 +28,7 @@ const defaultContent: Record<string, CMSContent> = {
     image_url: null,
     cta_text: null,
     cta_link: null,
+    metadata: null,
   },
   ueberuns_mission: {
     title: "Unsere Mission",
@@ -34,6 +37,7 @@ const defaultContent: Record<string, CMSContent> = {
     image_url: null,
     cta_text: null,
     cta_link: null,
+    metadata: null,
   },
   kalender_hero: {
     title: "Veranstaltungskalender",
@@ -42,6 +46,7 @@ const defaultContent: Record<string, CMSContent> = {
     image_url: null,
     cta_text: null,
     cta_link: null,
+    metadata: null,
   },
   foerderung_hero: {
     title: "Förderinfos",
@@ -50,6 +55,7 @@ const defaultContent: Record<string, CMSContent> = {
     image_url: null,
     cta_text: null,
     cta_link: null,
+    metadata: null,
   },
   foerderung_tipp: {
     title: "Tipp",
@@ -58,6 +64,7 @@ const defaultContent: Record<string, CMSContent> = {
     image_url: null,
     cta_text: "Kontaktiere uns",
     cta_link: "/kontakt",
+    metadata: null,
   },
 };
 
@@ -69,6 +76,7 @@ export function useCMSContent(blockKey: string) {
     image_url: null,
     cta_text: null,
     cta_link: null,
+    metadata: null,
   });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -77,7 +85,7 @@ export function useCMSContent(blockKey: string) {
       try {
         const { data, error } = await supabase
           .from("cms_content")
-          .select("title, subtitle, content, image_url, cta_text, cta_link")
+          .select("title, subtitle, content, image_url, cta_text, cta_link, metadata")
           .eq("block_key", blockKey)
           .maybeSingle();
 
@@ -91,6 +99,7 @@ export function useCMSContent(blockKey: string) {
             image_url: data.image_url || defaultContent[blockKey]?.image_url || null,
             cta_text: data.cta_text || defaultContent[blockKey]?.cta_text || null,
             cta_link: data.cta_link || defaultContent[blockKey]?.cta_link || null,
+            metadata: (data.metadata as Record<string, unknown> | null) ?? defaultContent[blockKey]?.metadata ?? null,
           });
         }
       } catch (error) {
