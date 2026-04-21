@@ -290,15 +290,15 @@ export default function Mitmachen({ previewData }: { previewData?: MitmachenPrev
             className="text-center mb-14"
           >
             <h2 className="font-display text-3xl sm:text-4xl font-bold text-foreground">
-              So wirst du Mitglied
+              {stepsIntro.title}
             </h2>
-            <p className="mt-3 text-muted-foreground">In drei einfachen Schritten</p>
+            <p className="mt-3 text-muted-foreground">{stepsIntro.subtitle}</p>
           </motion.div>
 
           <div className="space-y-0">
-            {steps.map((step, index) => (
+            {stepItems.map((step, index) => (
               <motion.div
-                key={step.num}
+                key={step.id}
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
@@ -306,17 +306,17 @@ export default function Mitmachen({ previewData }: { previewData?: MitmachenPrev
                 className="flex gap-6 relative"
               >
                 {/* Line */}
-                {index < steps.length - 1 && (
+                {index < stepItems.length - 1 && (
                   <div className="absolute left-[19px] top-12 bottom-0 w-px bg-border" />
                 )}
                 {/* Number */}
                 <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-display font-bold text-lg shrink-0 z-10">
-                  {step.num}
+                  {index + 1}
                 </div>
                 {/* Content */}
                 <div className="pb-10">
                   <h3 className="font-display text-lg font-semibold text-foreground">{step.title}</h3>
-                  <p className="text-sm text-muted-foreground mt-1">{step.desc}</p>
+                  <p className="text-sm text-muted-foreground mt-1">{step.description}</p>
                 </div>
               </motion.div>
             ))}
