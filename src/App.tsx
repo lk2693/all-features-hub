@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
+import { ThemeProvider } from "@/hooks/useTheme";
 import { CookieConsentProvider } from "@/contexts/CookieConsentContext";
 import CookieBanner from "@/components/CookieBanner";
 import Index from "./pages/Index";
@@ -33,6 +34,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <CookieConsentProvider>
       <AuthProvider>
+        <ThemeProvider>
         <TooltipProvider>
           <Toaster />
           <Sonner />
@@ -63,6 +65,7 @@ const App = () => (
             <CookieBanner />
           </BrowserRouter>
         </TooltipProvider>
+        </ThemeProvider>
       </AuthProvider>
     </CookieConsentProvider>
   </QueryClientProvider>
