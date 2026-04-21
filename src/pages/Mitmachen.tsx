@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
-import { UserPlus, ArrowRight, Check, Calendar, Users } from "lucide-react";
+import { UserPlus, ArrowRight, Check, Calendar, Users, Mail } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { getIcon } from "@/lib/iconMap";
