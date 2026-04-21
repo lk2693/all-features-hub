@@ -27,6 +27,8 @@ import { Loader2, X, Image, Film, Plus, GripVertical } from "lucide-react";
 export interface MediaItem {
   type: "image" | "video";
   url: string;
+  title?: string;
+  subtitle?: string;
 }
 
 interface HeroMediaManagerProps {
