@@ -34,7 +34,7 @@ export function AboutHeroEditor({ value, onChange }: Props) {
           label="Hintergrundbild"
           value={value.image_url}
           onChange={(url) => update("image_url", url)}
-          placeholder="https://… oder hochladen"
+          folder="about"
         />
       </CardContent>
     </Card>
