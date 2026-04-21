@@ -224,13 +224,13 @@ export default function UeberUns({ previewData }: { previewData?: UeberUnsPrevie
             className="mb-14"
           >
             <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase bg-primary/10 text-primary mb-5">
-              Team
+              {vorstandIntro.badge}
             </span>
             <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground tracking-tight">
-              Unser Vorstand
+              {vorstandIntro.title}
             </h2>
             <p className="mt-4 text-lg text-muted-foreground max-w-xl">
-              Ehrenamtlich engagiert für die Kulturszene Braunschweigs.
+              {vorstandIntro.subtitle}
             </p>
           </motion.div>
 
