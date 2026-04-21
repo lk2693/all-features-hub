@@ -181,10 +181,10 @@ export default function ExpandingHero() {
               <Button
                 size="lg"
                 variant="outline"
-                className="border-white/40 text-white hover:bg-white/15 backdrop-blur-sm text-lg px-8 py-6"
+                className="bg-transparent border-white/60 text-white hover:bg-white/15 hover:text-white backdrop-blur-sm text-lg px-8 py-6"
                 asChild
               >
-                <Link to="/ueber-uns">Mehr erfahren</Link>
+                <Link to="/ueber-uns" className="text-white">Mehr erfahren</Link>
               </Button>
             </motion.div>
           </motion.div>
