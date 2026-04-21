@@ -1,87 +1,137 @@
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
-import { Users, UserPlus, Handshake, FileCheck, ArrowRight, Check, MessageSquare, Calendar, Target, Megaphone, Palette, Vote, Package, BookOpen, Mail } from "lucide-react";
+import { UserPlus, ArrowRight, Check, Calendar, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { getIcon } from "@/lib/iconMap";
 import mitmachenHero from "@/assets/mitmachen-hero.jpg";
-import agKulturpolitik from "@/assets/ag-kulturpolitik.jpg";
-import agFoerderung from "@/assets/ag-foerderung.jpg";
-import agOeffentlichkeit from "@/assets/ag-oeffentlichkeit.jpg";
-import agRessourcen from "@/assets/ag-ressourcen.jpg";
 
-const membershipBenefits = [
-  { icon: Vote, title: "Stimmrecht", desc: "In Vollversammlungen & Abstimmungen" },
-  { icon: Package, title: "Ressourcenpool", desc: "Technik, Räume & Know-how nutzen" },
-  { icon: BookOpen, title: "Förderberatung", desc: "Infos & Workshops zu Anträgen" },
-  { icon: Handshake, title: "Netzwerk", desc: "Kontakte in der Kulturszene knüpfen" },
-  { icon: MessageSquare, title: "Newsletter", desc: "Exklusive Infos & Updates" },
-  { icon: Users, title: "Arbeitsgruppen", desc: "In AGs aktiv mitgestalten" },
-];
+interface BenefitRow { id: string; title: string; description: string | null; icon: string | null; }
+interface MemberTypeRow {
+  id: string; title: string; price: string; description: string | null;
+  features: string[]; highlighted: boolean; cta_text: string; cta_link: string;
+}
+interface StepRow { id: string; title: string; description: string | null; }
+interface AgRow {
+  id: string; name: string; description: string | null; icon: string | null;
+  image_url: string | null; member_count: number | null; meeting_info: string | null;
+}
+interface CMSRow {
+  block_key: string; title: string | null; subtitle: string | null;
+  content: string | null; image_url: string | null;
+  cta_text: string | null; cta_link: string | null;
+  metadata: Record<string, unknown> | null;
+}
 
-const steps = [
-  { num: "1", title: "Kontakt aufnehmen", desc: "Schreib uns über das Kontaktformular oder per E-Mail." },
-  { num: "2", title: "Antrag ausfüllen", desc: "Wir senden dir den Mitgliedsantrag zu." },
-  { num: "3", title: "Willkommen!", desc: "Nach Bestätigung bist du offiziell Mitglied." },
-];
+export interface MitmachenPreviewData {
+  hero?: {
+    badge: string; title: string; subtitle: string; image_url: string;
+    cta_text: string; cta_link: string; secondary_cta_text: string; secondary_cta_link: string;
+  };
+  benefits_intro?: { title: string; subtitle: string };
+  benefits?: BenefitRow[];
+  member_types?: MemberTypeRow[];
+  steps_intro?: { title: string; subtitle: string };
+  steps?: StepRow[];
+  ags_intro?: { title: string; subtitle: string };
+  cta?: {
+    title: string; content: string;
+    cta_text: string; cta_link: string;
+    secondary_cta_text: string; secondary_cta_link: string;
+  };
+}
 
-const memberTypes = [
-  {
-    title: "Einzelmitglied",
-    price: "Kostenlos",
-    desc: "Für freischaffende Künstler:innen und Kulturschaffende",
-    features: ["Stimmrecht", "Newsletter", "Ressourcenpool", "Netzwerk-Events"],
-    highlighted: false,
-  },
-  {
-    title: "Institution",
-    price: "Auf Anfrage",
-    desc: "Für Kulturvereine, Theater, Galerien und Kollektive",
-    features: ["Alle Einzelvorteile", "Erweiterter Ressourcenzugang", "AG-Mitarbeit", "Logo auf Website"],
-    highlighted: true,
-  },
-];
+export default function Mitmachen({ previewData }: { previewData?: MitmachenPreviewData } = {}) {
+  const [cmsMap, setCmsMap] = useState<Map<string, CMSRow>>(new Map());
+  const [benefits, setBenefits] = useState<BenefitRow[]>([]);
+  const [memberTypes, setMemberTypes] = useState<MemberTypeRow[]>([]);
+  const [steps, setSteps] = useState<StepRow[]>([]);
+  const [ags, setAgs] = useState<AgRow[]>([]);
 
-const ags = [
-  {
-    icon: Target,
-    name: "AG Kulturpolitik",
-    description: "Erarbeitet Stellungnahmen und vertritt die Interessen der Kulturszene gegenüber Politik und Verwaltung.",
-    members: 12,
-    nextMeeting: "18. März 2025",
-    image: agKulturpolitik,
-  },
-  {
-    icon: FileCheck,
-    name: "AG Förderung",
-    description: "Sammelt Infos zu Fördermöglichkeiten und organisiert Workshops zum Thema Antragsstellung.",
-    members: 8,
-    nextMeeting: "25. März 2025",
-    image: agFoerderung,
-  },
-  {
-    icon: Megaphone,
-    name: "AG Öffentlichkeitsarbeit",
-    description: "Kümmert sich um Website, Social Media und die Außendarstellung des Kulturrats.",
-    members: 6,
-    nextMeeting: "10. März 2025",
-    image: agOeffentlichkeit,
-  },
-  {
-    icon: Palette,
-    name: "AG Ressourcen",
-    description: "Pflegt den Ressourcenpool und entwickelt neue Angebote für Kulturschaffende.",
-    members: 5,
-    nextMeeting: "20. März 2025",
-    image: agRessourcen,
-  },
-];
+  useEffect(() => {
+    if (previewData) return;
+    async function load() {
+      try {
+        const [cms, b, mt, st, ag] = await Promise.all([
+          supabase.from("cms_content").select("block_key, title, subtitle, content, image_url, cta_text, cta_link, metadata")
+            .in("block_key", ["mitmachen_hero", "mitmachen_benefits_intro", "mitmachen_steps_intro", "mitmachen_ags_intro", "mitmachen_cta"]),
+          supabase.from("mitmachen_benefits").select("id, title, description, icon, sort_order").eq("is_active", true).order("sort_order"),
+          supabase.from("mitmachen_member_types").select("id, title, price, description, features, highlighted, cta_text, cta_link, sort_order").eq("is_active", true).order("sort_order"),
+          supabase.from("mitmachen_steps").select("id, title, description, sort_order").eq("is_active", true).order("sort_order"),
+          supabase.from("working_groups").select("id, name, description, icon, image_url, member_count, meeting_info, sort_order").eq("is_active", true).order("sort_order"),
+        ]);
+        const map = new Map<string, CMSRow>();
+        (cms.data ?? []).forEach((r) => map.set(r.block_key, r as CMSRow));
+        setCmsMap(map);
+        setBenefits((b.data ?? []) as BenefitRow[]);
+        setMemberTypes((mt.data ?? []).map((r) => ({
+          ...r,
+          features: Array.isArray(r.features) ? (r.features as string[]) : [],
+        })) as MemberTypeRow[]);
+        setSteps((st.data ?? []) as StepRow[]);
+        setAgs((ag.data ?? []) as AgRow[]);
+      } catch (e) {
+        console.error("Error loading mitmachen page:", e);
+      }
+    }
+    load();
+  }, [previewData]);
 
-export default function Mitmachen() {
+  // Resolve content with preview overrides.
+  const heroRow = cmsMap.get("mitmachen_hero");
+  const heroMeta = (heroRow?.metadata as Record<string, unknown> | null) ?? {};
+  const hero = previewData?.hero ?? {
+    badge: typeof heroMeta.badge === "string" ? heroMeta.badge : "Mitmachen",
+    title: heroRow?.title ?? "Werde Teil der Kulturszene",
+    subtitle: heroRow?.subtitle ?? "",
+    image_url: heroRow?.image_url ?? "",
+    cta_text: heroRow?.cta_text ?? "Jetzt Mitglied werden",
+    cta_link: heroRow?.cta_link ?? "/kontakt",
+    secondary_cta_text: typeof heroMeta.secondary_cta_text === "string" ? heroMeta.secondary_cta_text : "Arbeitsgruppen entdecken",
+    secondary_cta_link: typeof heroMeta.secondary_cta_link === "string" ? heroMeta.secondary_cta_link : "#ags",
+  };
+  const heroBg = hero.image_url || mitmachenHero;
+
+  const benefitsIntroRow = cmsMap.get("mitmachen_benefits_intro");
+  const benefitsIntro = previewData?.benefits_intro ?? {
+    title: benefitsIntroRow?.title ?? "Deine Vorteile als Mitglied",
+    subtitle: benefitsIntroRow?.subtitle ?? "",
+  };
+
+  const stepsIntroRow = cmsMap.get("mitmachen_steps_intro");
+  const stepsIntro = previewData?.steps_intro ?? {
+    title: stepsIntroRow?.title ?? "So wirst du Mitglied",
+    subtitle: stepsIntroRow?.subtitle ?? "",
+  };
+
+  const agsIntroRow = cmsMap.get("mitmachen_ags_intro");
+  const agsIntro = previewData?.ags_intro ?? {
+    title: agsIntroRow?.title ?? "Arbeitsgruppen",
+    subtitle: agsIntroRow?.subtitle ?? "",
+  };
+
+  const ctaRow = cmsMap.get("mitmachen_cta");
+  const ctaMeta = (ctaRow?.metadata as Record<string, unknown> | null) ?? {};
+  const cta = previewData?.cta ?? {
+    title: ctaRow?.title ?? "Fragen? Wir helfen gerne!",
+    content: ctaRow?.content ?? "",
+    cta_text: ctaRow?.cta_text ?? "Kontakt aufnehmen",
+    cta_link: ctaRow?.cta_link ?? "/kontakt",
+    secondary_cta_text: typeof ctaMeta.secondary_cta_text === "string" ? ctaMeta.secondary_cta_text : "",
+    secondary_cta_link: typeof ctaMeta.secondary_cta_link === "string" ? ctaMeta.secondary_cta_link : "",
+  };
+
+  const benefitItems = previewData?.benefits ?? benefits;
+  const memberTypeItems = previewData?.member_types ?? memberTypes;
+  const stepItems = previewData?.steps ?? steps;
+
   return (
     <Layout>
       {/* Hero */}
       <section className="relative min-h-[50vh] flex items-end overflow-hidden">
-        <img src={mitmachenHero} alt="Mitmachen" className="absolute inset-0 w-full h-full object-cover" />
+        <img src={heroBg} alt="Mitmachen" className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-foreground via-foreground/50 to-foreground/10" />
 
         <div className="container relative z-10 pb-14 pt-36">
@@ -91,7 +141,7 @@ export default function Mitmachen() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            Mitmachen
+            {hero.badge}
           </motion.span>
           <motion.h1
             className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-background tracking-tight leading-[1.1]"
@@ -99,7 +149,7 @@ export default function Mitmachen() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.1 }}
           >
-            Werde Teil der Kulturszene
+            {hero.title}
           </motion.h1>
           <motion.p
             className="mt-4 text-lg text-background/60 max-w-xl"
@@ -107,7 +157,7 @@ export default function Mitmachen() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.2 }}
           >
-            Vernetze dich, bring dich ein und gestalte die Kulturpolitik unserer Stadt mit.
+            {hero.subtitle}
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -115,20 +165,24 @@ export default function Mitmachen() {
             transition={{ duration: 0.7, delay: 0.3 }}
             className="mt-8 flex flex-col sm:flex-row gap-3"
           >
-            <Link
-              to="/kontakt"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
-            >
-              <UserPlus className="h-4 w-4" />
-              Jetzt Mitglied werden
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-            <a
-              href="#ags"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold border border-background/30 text-background hover:bg-background/10 transition-colors"
-            >
-              Arbeitsgruppen entdecken
-            </a>
+            {hero.cta_text && (
+              <Link
+                to={hero.cta_link || "/kontakt"}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+              >
+                <UserPlus className="h-4 w-4" />
+                {hero.cta_text}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            )}
+            {hero.secondary_cta_text && (
+              <a
+                href={hero.secondary_cta_link || "#ags"}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold border border-background/30 text-background hover:bg-background/10 transition-colors"
+              >
+                {hero.secondary_cta_text}
+              </a>
+            )}
           </motion.div>
         </div>
       </section>
@@ -144,37 +198,40 @@ export default function Mitmachen() {
             className="mb-14"
           >
             <h2 className="font-display text-3xl sm:text-4xl font-bold text-foreground">
-              Deine Vorteile als Mitglied
+              {benefitsIntro.title}
             </h2>
             <p className="mt-3 text-lg text-muted-foreground max-w-2xl">
-              Die Mitgliedschaft steht allen Kulturschaffenden, Künstler:innen und Kulturinstitutionen offen.
+              {benefitsIntro.subtitle}
             </p>
           </motion.div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-16">
-            {membershipBenefits.map((benefit, index) => (
-              <motion.div
-                key={benefit.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: index * 0.06 }}
-                className="p-5 rounded-2xl border border-border/50 bg-card hover:border-primary/30 hover:shadow-glow transition-all duration-300"
-              >
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
-                  <benefit.icon className="h-5 w-5 text-primary" />
-                </div>
-                <h3 className="font-display font-semibold text-foreground mb-1">{benefit.title}</h3>
-                <p className="text-sm text-muted-foreground">{benefit.desc}</p>
-              </motion.div>
-            ))}
+            {benefitItems.map((benefit, index) => {
+              const Icon = getIcon(benefit.icon ?? "Sparkles");
+              return (
+                <motion.div
+                  key={benefit.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: index * 0.06 }}
+                  className="p-5 rounded-2xl border border-border/50 bg-card hover:border-primary/30 hover:shadow-glow transition-all duration-300"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+                    <Icon className="h-5 w-5 text-primary" />
+                  </div>
+                  <h3 className="font-display font-semibold text-foreground mb-1">{benefit.title}</h3>
+                  <p className="text-sm text-muted-foreground">{benefit.description}</p>
+                </motion.div>
+              );
+            })}
           </div>
 
           {/* Membership Types */}
           <div className="grid md:grid-cols-2 gap-6">
-            {memberTypes.map((type, index) => (
+            {memberTypeItems.map((type, index) => (
               <motion.div
-                key={type.title}
+                key={type.id}
                 initial={{ opacity: 0, y: 25 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -195,17 +252,17 @@ export default function Mitmachen() {
                 <div className="mt-2 mb-4">
                   <span className="font-display text-3xl font-bold text-primary">{type.price}</span>
                 </div>
-                <p className="text-sm text-muted-foreground mb-6">{type.desc}</p>
+                <p className="text-sm text-muted-foreground mb-6">{type.description}</p>
                 <ul className="space-y-2.5 mb-8">
-                  {type.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2.5 text-sm text-foreground">
+                  {type.features.map((f, i) => (
+                    <li key={i} className="flex items-center gap-2.5 text-sm text-foreground">
                       <Check className="h-4 w-4 text-primary shrink-0" />
                       {f}
                     </li>
                   ))}
                 </ul>
                 <Link
-                  to="/kontakt"
+                  to={type.cta_link || "/kontakt"}
                   className={cn(
                     "inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold transition-all",
                     type.highlighted
@@ -213,7 +270,7 @@ export default function Mitmachen() {
                       : "border border-border text-foreground hover:bg-muted"
                   )}
                 >
-                  Jetzt beitreten
+                  {type.cta_text || "Jetzt beitreten"}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </motion.div>
