@@ -231,7 +231,7 @@ export default function Header() {
                 "p-2.5 rounded-lg transition-colors",
                 scrolled || !isHome ?
                 "text-muted-foreground hover:bg-muted" :
-                "text-white/80 hover:bg-white/10"
+                "text-white hover:bg-white/10 drop-shadow-md"
               )}>
               
               <Search className="h-5 w-5" />
@@ -242,7 +242,7 @@ export default function Header() {
                 "p-2.5 rounded-lg transition-colors",
                 scrolled || !isHome ?
                 "text-foreground hover:bg-muted" :
-                "text-white hover:bg-white/10"
+                "text-white hover:bg-white/10 drop-shadow-md"
               )}>
               
               <AnimatePresence mode="wait" initial={false}>
