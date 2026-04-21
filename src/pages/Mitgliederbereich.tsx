@@ -233,7 +233,7 @@ export default function Mitgliederbereich() {
       <section className="py-12 md:py-16">
         <div className="container">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-            <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid h-12 rounded-xl bg-muted/50 p-1">
+            <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid h-12 rounded-xl bg-muted/50 p-1">
               <TabsTrigger value="profil" className="gap-2 rounded-lg data-[state=active]:shadow-sm">
                 <User className="h-4 w-4" />
                 <span className="hidden sm:inline">Mein Profil</span>
@@ -243,6 +243,11 @@ export default function Mitgliederbereich() {
                 <Package className="h-4 w-4" />
                 <span className="hidden sm:inline">Meine Ressourcen</span>
                 <span className="sm:hidden">Ressourcen</span>
+              </TabsTrigger>
+              <TabsTrigger value="anfragen" className="gap-2 rounded-lg data-[state=active]:shadow-sm">
+                <Inbox className="h-4 w-4" />
+                <span className="hidden sm:inline">Anfragen</span>
+                <span className="sm:hidden">Anfragen</span>
               </TabsTrigger>
               <TabsTrigger value="mitglieder" className="gap-2 rounded-lg data-[state=active]:shadow-sm">
                 <Users className="h-4 w-4" />
