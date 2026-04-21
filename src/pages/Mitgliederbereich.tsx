@@ -443,6 +443,27 @@ export default function Mitgliederbereich() {
               </motion.div>
             </TabsContent>
 
+            {/* Anfragen Tab */}
+            <TabsContent value="anfragen">
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Card className="border-border/50 shadow-card">
+                  <CardHeader>
+                    <CardTitle className="text-xl">Ressourcen-Anfragen</CardTitle>
+                    <CardDescription>
+                      Verwalte hier Anfragen, die du erhalten oder gestellt hast.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <MyRequests />
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </TabsContent>
+
             {/* Members Directory Tab */}
             <TabsContent value="mitglieder">
               <motion.div
