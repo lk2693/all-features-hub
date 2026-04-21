@@ -628,6 +628,72 @@ export type Database = {
         }
         Relationships: []
       }
+      theme_settings: {
+        Row: {
+          accent: string
+          accent_foreground: string
+          background: string
+          border: string
+          card: string
+          card_foreground: string
+          font_body: string
+          font_display: string
+          foreground: string
+          id: string
+          muted: string
+          muted_foreground: string
+          primary_color: string
+          primary_foreground: string
+          primary_glow: string
+          secondary: string
+          secondary_foreground: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          accent?: string
+          accent_foreground?: string
+          background?: string
+          border?: string
+          card?: string
+          card_foreground?: string
+          font_body?: string
+          font_display?: string
+          foreground?: string
+          id?: string
+          muted?: string
+          muted_foreground?: string
+          primary_color?: string
+          primary_foreground?: string
+          primary_glow?: string
+          secondary?: string
+          secondary_foreground?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          accent?: string
+          accent_foreground?: string
+          background?: string
+          border?: string
+          card?: string
+          card_foreground?: string
+          font_body?: string
+          font_display?: string
+          foreground?: string
+          id?: string
+          muted?: string
+          muted_foreground?: string
+          primary_color?: string
+          primary_foreground?: string
+          primary_glow?: string
+          secondary?: string
+          secondary_foreground?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
