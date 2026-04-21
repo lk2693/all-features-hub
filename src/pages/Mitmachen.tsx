@@ -198,37 +198,40 @@ export default function Mitmachen({ previewData }: { previewData?: MitmachenPrev
             className="mb-14"
           >
             <h2 className="font-display text-3xl sm:text-4xl font-bold text-foreground">
-              Deine Vorteile als Mitglied
+              {benefitsIntro.title}
             </h2>
             <p className="mt-3 text-lg text-muted-foreground max-w-2xl">
-              Die Mitgliedschaft steht allen Kulturschaffenden, Künstler:innen und Kulturinstitutionen offen.
+              {benefitsIntro.subtitle}
             </p>
           </motion.div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-16">
-            {membershipBenefits.map((benefit, index) => (
-              <motion.div
-                key={benefit.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: index * 0.06 }}
-                className="p-5 rounded-2xl border border-border/50 bg-card hover:border-primary/30 hover:shadow-glow transition-all duration-300"
-              >
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
-                  <benefit.icon className="h-5 w-5 text-primary" />
-                </div>
-                <h3 className="font-display font-semibold text-foreground mb-1">{benefit.title}</h3>
-                <p className="text-sm text-muted-foreground">{benefit.desc}</p>
-              </motion.div>
-            ))}
+            {benefitItems.map((benefit, index) => {
+              const Icon = getIcon(benefit.icon ?? "Sparkles");
+              return (
+                <motion.div
+                  key={benefit.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: index * 0.06 }}
+                  className="p-5 rounded-2xl border border-border/50 bg-card hover:border-primary/30 hover:shadow-glow transition-all duration-300"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+                    <Icon className="h-5 w-5 text-primary" />
+                  </div>
+                  <h3 className="font-display font-semibold text-foreground mb-1">{benefit.title}</h3>
+                  <p className="text-sm text-muted-foreground">{benefit.description}</p>
+                </motion.div>
+              );
+            })}
           </div>
 
           {/* Membership Types */}
           <div className="grid md:grid-cols-2 gap-6">
-            {memberTypes.map((type, index) => (
+            {memberTypeItems.map((type, index) => (
               <motion.div
-                key={type.title}
+                key={type.id}
                 initial={{ opacity: 0, y: 25 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -249,17 +252,17 @@ export default function Mitmachen({ previewData }: { previewData?: MitmachenPrev
                 <div className="mt-2 mb-4">
                   <span className="font-display text-3xl font-bold text-primary">{type.price}</span>
                 </div>
-                <p className="text-sm text-muted-foreground mb-6">{type.desc}</p>
+                <p className="text-sm text-muted-foreground mb-6">{type.description}</p>
                 <ul className="space-y-2.5 mb-8">
-                  {type.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2.5 text-sm text-foreground">
+                  {type.features.map((f, i) => (
+                    <li key={i} className="flex items-center gap-2.5 text-sm text-foreground">
                       <Check className="h-4 w-4 text-primary shrink-0" />
                       {f}
                     </li>
                   ))}
                 </ul>
                 <Link
-                  to="/kontakt"
+                  to={type.cta_link || "/kontakt"}
                   className={cn(
                     "inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold transition-all",
                     type.highlighted
@@ -267,7 +270,7 @@ export default function Mitmachen({ previewData }: { previewData?: MitmachenPrev
                       : "border border-border text-foreground hover:bg-muted"
                   )}
                 >
-                  Jetzt beitreten
+                  {type.cta_text || "Jetzt beitreten"}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </motion.div>
