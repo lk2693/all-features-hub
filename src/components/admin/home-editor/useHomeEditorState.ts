@@ -2,9 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import type {
-  HomeEditorData, HeroData, IntroData, MembershipData, CTAData, HeroMediaItem,
-} from "./types";
+import type { HomeEditorData, IntroData, HeroMediaItem } from "./types";
 import type { StatItem } from "@/components/home/StatsCounter";
 import type { FeatureItem } from "@/components/home/FeaturesSection";
 import type { WorkingGroupItem } from "@/components/home/WorkingGroupsSection";
@@ -179,10 +177,12 @@ export function useHomeEditorState() {
       const payload = buildPayload(item, i);
       const isNew = !originalIds.has(item.id) || item.id.startsWith("new-");
       if (isNew) {
-        const { error } = await supabase.from(table).insert(payload);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error } = await supabase.from(table).insert(payload as any);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from(table).update(payload).eq("id", item.id);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error } = await supabase.from(table).update(payload as any).eq("id", item.id);
         if (error) throw error;
       }
     }
