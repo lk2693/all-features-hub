@@ -54,13 +54,13 @@ export function HomeEditor() {
           onIntroChange={(v) => patch("features_intro", v)}
           onItemsChange={(v) => patch("features", v)} />;
       case "news":
-        return <IntroEditor title="News-Vorschau – Intro" description="Titel & Untertitel über den Artikel-Karten." value={data.news_intro} onChange={(v) => patch("news_intro", v)} />;
+        return <IntroEditor title="News-Vorschau – Intro" description="Titel, Untertitel & Vorschaubild für die News-Sektion." value={data.news_intro} onChange={(v) => patch("news_intro", v)} withImage imageFolder="news-intro" />;
       case "working_groups":
         return <WorkingGroupsEditor intro={data.working_groups_intro} items={data.working_groups}
           onIntroChange={(v) => patch("working_groups_intro", v)}
           onItemsChange={(v) => patch("working_groups", v)} />;
       case "calendar":
-        return <IntroEditor title="Kalender-Vorschau – Intro" description="Titel & Untertitel über den Terminen." value={data.calendar_intro} onChange={(v) => patch("calendar_intro", v)} />;
+        return <IntroEditor title="Kalender-Vorschau – Intro" description="Titel, Untertitel & Vorschaubild für die Kalender-Sektion." value={data.calendar_intro} onChange={(v) => patch("calendar_intro", v)} withImage imageFolder="calendar-intro" />;
       case "resources":
         return <IntroEditor title="Ressourcen-Vorschau – Intro" description="Titel & Untertitel über dem Pool." value={data.resources_intro} onChange={(v) => patch("resources_intro", v)} />;
       case "membership":
@@ -176,7 +176,7 @@ function PreviewCanvas({
         }} />
       </div>
       <div ref={(el) => (sectionRefs.current.news = el)}>
-        <NewsSection previewData={{ intro: { title: data.news_intro.title, subtitle: data.news_intro.subtitle } }} />
+        <NewsSection previewData={{ intro: { title: data.news_intro.title, subtitle: data.news_intro.subtitle, image_url: data.news_intro.image_url } }} />
       </div>
       <div ref={(el) => (sectionRefs.current.working_groups = el)}>
         <WorkingGroupsSection previewData={{
@@ -185,7 +185,7 @@ function PreviewCanvas({
         }} />
       </div>
       <div ref={(el) => (sectionRefs.current.calendar = el)}>
-        <CalendarPreview previewData={{ intro: { title: data.calendar_intro.title, subtitle: data.calendar_intro.subtitle } }} />
+        <CalendarPreview previewData={{ intro: { title: data.calendar_intro.title, subtitle: data.calendar_intro.subtitle, image_url: data.calendar_intro.image_url } }} />
       </div>
       <div ref={(el) => (sectionRefs.current.resources = el)}>
         <ResourcesPreview previewData={{ intro: { title: data.resources_intro.title, subtitle: data.resources_intro.subtitle } }} />

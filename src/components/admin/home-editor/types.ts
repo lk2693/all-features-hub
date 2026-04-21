@@ -22,6 +22,7 @@ export interface IntroData {
   subtitle: string;
   cta_text?: string;
   cta_link?: string;
+  image_url?: string;
 }
 
 export interface MembershipData {

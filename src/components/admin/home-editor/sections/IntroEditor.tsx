@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { ImageUploadField } from "@/components/admin/cms/ImageUploadField";
 import type { IntroData } from "../types";
 
 interface Props {
@@ -11,9 +12,13 @@ interface Props {
   onChange: (next: IntroData) => void;
   /** When true, renders CTA button fields. */
   withCTA?: boolean;
+  /** When true, renders an image upload field. */
+  withImage?: boolean;
+  /** Storage folder for image uploads. */
+  imageFolder?: string;
 }
 
-export function IntroEditor({ title, description, value, onChange, withCTA }: Props) {
+export function IntroEditor({ title, description, value, onChange, withCTA, withImage, imageFolder = "intro" }: Props) {
   function update<K extends keyof IntroData>(key: K, v: IntroData[K]) {
     onChange({ ...value, [key]: v });
   }
@@ -43,6 +48,15 @@ export function IntroEditor({ title, description, value, onChange, withCTA }: Pr
               <Input value={value.cta_link ?? ""} onChange={(e) => update("cta_link", e.target.value)} placeholder="/mitmachen" />
             </div>
           </div>
+        )}
+        {withImage && (
+          <ImageUploadField
+            label="Vorschaubild"
+            value={value.image_url ?? ""}
+            onChange={(url) => update("image_url", url)}
+            folder={imageFolder}
+            helpText="Wird als Vorschaubild in dieser Sektion auf der Startseite angezeigt."
+          />
         )}
       </CardContent>
     </Card>
