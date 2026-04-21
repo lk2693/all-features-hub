@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  User, Package, Users, Building, Loader2, Save, Check,
+  User, Package, Users, Building, Loader2, Save, Check, Inbox,
   Calendar, ArrowRight, Shield, Clock, Sparkles
 } from "lucide-react";
 import Layout from "@/components/layout/Layout";
@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import heroImage from "@/assets/mitgliederbereich-hero.jpg";
+import { MyRequests } from "@/components/resources/MyRequests";
 
 interface Profile {
   id: string;
