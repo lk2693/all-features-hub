@@ -54,13 +54,13 @@ export function HomeEditor() {
           onIntroChange={(v) => patch("features_intro", v)}
           onItemsChange={(v) => patch("features", v)} />;
       case "news":
-        return <IntroEditor title="News-Vorschau – Intro" description="Titel & Untertitel über den Artikel-Karten." value={data.news_intro} onChange={(v) => patch("news_intro", v)} />;
+        return <IntroEditor title="News-Vorschau – Intro" description="Titel, Untertitel & Vorschaubild für die News-Sektion." value={data.news_intro} onChange={(v) => patch("news_intro", v)} withImage imageFolder="news-intro" />;
       case "working_groups":
         return <WorkingGroupsEditor intro={data.working_groups_intro} items={data.working_groups}
           onIntroChange={(v) => patch("working_groups_intro", v)}
           onItemsChange={(v) => patch("working_groups", v)} />;
       case "calendar":
-        return <IntroEditor title="Kalender-Vorschau – Intro" description="Titel & Untertitel über den Terminen." value={data.calendar_intro} onChange={(v) => patch("calendar_intro", v)} />;
+        return <IntroEditor title="Kalender-Vorschau – Intro" description="Titel, Untertitel & Vorschaubild für die Kalender-Sektion." value={data.calendar_intro} onChange={(v) => patch("calendar_intro", v)} withImage imageFolder="calendar-intro" />;
       case "resources":
         return <IntroEditor title="Ressourcen-Vorschau – Intro" description="Titel & Untertitel über dem Pool." value={data.resources_intro} onChange={(v) => patch("resources_intro", v)} />;
       case "membership":
