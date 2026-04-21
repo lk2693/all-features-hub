@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  User, Package, Users, Building, Loader2, Save, Check,
+  User, Package, Users, Building, Loader2, Save, Check, Inbox,
   Calendar, ArrowRight, Shield, Clock, Sparkles
 } from "lucide-react";
 import Layout from "@/components/layout/Layout";
@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import heroImage from "@/assets/mitgliederbereich-hero.jpg";
+import { MyRequests } from "@/components/resources/MyRequests";
 
 interface Profile {
   id: string;
@@ -232,7 +233,7 @@ export default function Mitgliederbereich() {
       <section className="py-12 md:py-16">
         <div className="container">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-            <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid h-12 rounded-xl bg-muted/50 p-1">
+            <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid h-12 rounded-xl bg-muted/50 p-1">
               <TabsTrigger value="profil" className="gap-2 rounded-lg data-[state=active]:shadow-sm">
                 <User className="h-4 w-4" />
                 <span className="hidden sm:inline">Mein Profil</span>
@@ -242,6 +243,11 @@ export default function Mitgliederbereich() {
                 <Package className="h-4 w-4" />
                 <span className="hidden sm:inline">Meine Ressourcen</span>
                 <span className="sm:hidden">Ressourcen</span>
+              </TabsTrigger>
+              <TabsTrigger value="anfragen" className="gap-2 rounded-lg data-[state=active]:shadow-sm">
+                <Inbox className="h-4 w-4" />
+                <span className="hidden sm:inline">Anfragen</span>
+                <span className="sm:hidden">Anfragen</span>
               </TabsTrigger>
               <TabsTrigger value="mitglieder" className="gap-2 rounded-lg data-[state=active]:shadow-sm">
                 <Users className="h-4 w-4" />
@@ -432,6 +438,27 @@ export default function Mitgliederbereich() {
                         ))}
                       </div>
                     )}
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </TabsContent>
+
+            {/* Anfragen Tab */}
+            <TabsContent value="anfragen">
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Card className="border-border/50 shadow-card">
+                  <CardHeader>
+                    <CardTitle className="text-xl">Ressourcen-Anfragen</CardTitle>
+                    <CardDescription>
+                      Verwalte hier Anfragen, die du erhalten oder gestellt hast.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <MyRequests />
                   </CardContent>
                 </Card>
               </motion.div>

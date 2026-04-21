@@ -2,10 +2,11 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Layout from "@/components/layout/Layout";
 import { Link } from "react-router-dom";
-import { Search, Monitor, Home, Lightbulb, Music, Camera, Wrench, MapPin, User, ArrowRight, Plus, Loader2, Mail } from "lucide-react";
+import { Search, Monitor, Home, Lightbulb, Music, Camera, Wrench, MapPin, User, ArrowRight, Plus, Loader2, Send } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { ResourceRequestDialog } from "@/components/resources/ResourceRequestDialog";
 import ressourcenHero from "@/assets/ressourcen-hero.jpg";
 
 const categories = [
@@ -53,6 +54,8 @@ export default function Ressourcen() {
   const [isFocused, setIsFocused] = useState(false);
   const [resources, setResources] = useState<Resource[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [requestOpen, setRequestOpen] = useState(false);
+  const [activeResource, setActiveResource] = useState<Resource | null>(null);
 
   useEffect(() => {
     async function fetchResources() {
@@ -247,16 +250,17 @@ export default function Ressourcen() {
                             <span className="truncate">{resource.location}</span>
                           </span>
                         </div>
-                        <a
-                          href={`mailto:${resource.provider_email}?subject=Anfrage: ${encodeURIComponent(resource.title)}`}
-                          className="flex items-center justify-between pt-4 text-sm font-medium text-primary opacity-80 group-hover:opacity-100 transition-opacity"
+                        <button
+                          type="button"
+                          onClick={() => { setActiveResource(resource); setRequestOpen(true); }}
+                          className="w-full flex items-center justify-between pt-4 text-sm font-medium text-primary opacity-80 group-hover:opacity-100 transition-opacity"
                         >
                           <span className="flex items-center gap-1.5">
-                            <Mail className="h-3.5 w-3.5" />
-                            Kontakt aufnehmen
+                            <Send className="h-3.5 w-3.5" />
+                            Ressource anfragen
                           </span>
                           <ArrowRight className="h-4 w-4" />
-                        </a>
+                        </button>
                       </div>
                     </div>
                   </motion.div>
@@ -266,6 +270,11 @@ export default function Ressourcen() {
           )}
         </div>
       </section>
+      <ResourceRequestDialog
+        open={requestOpen}
+        onOpenChange={setRequestOpen}
+        resource={activeResource}
+      />
     </Layout>
   );
 }
