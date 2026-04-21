@@ -12,7 +12,6 @@ export function AdminTabs({ activeTab, onTabChange, children }: AdminTabsProps) 
     <Tabs value={activeTab} onValueChange={onTabChange} className="w-full">
       <TabsList className="grid w-full grid-cols-9 mb-8">
         <TabsTrigger value="statistics" className="flex items-center gap-2">
-        <TabsTrigger value="statistics" className="flex items-center gap-2">
           <BarChart3 className="h-4 w-4" />
           <span className="hidden sm:inline">Statistik</span>
         </TabsTrigger>
