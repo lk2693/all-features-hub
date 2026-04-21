@@ -63,7 +63,7 @@ function formatDate(d: string) {
 }
 
 interface PreviewData {
-  intro?: { title?: string | null; subtitle?: string | null };
+  intro?: { title?: string | null; subtitle?: string | null; image_url?: string | null };
 }
 
 export default function NewsSection({ previewData }: { previewData?: PreviewData } = {}) {
@@ -96,6 +96,7 @@ export default function NewsSection({ previewData }: { previewData?: PreviewData
 
   const introTitle = previewData?.intro?.title ?? intro.title ?? "Aktuelles";
   const introSubtitle = previewData?.intro?.subtitle ?? intro.subtitle ?? "Neuigkeiten aus der Kulturszene";
+  const introImage = previewData?.intro?.image_url ?? intro.image_url ?? null;
 
   return (
     <section className="py-24 lg:py-36 bg-muted/30">
@@ -145,6 +146,12 @@ export default function NewsSection({ previewData }: { previewData?: PreviewData
                     {featured.cover_image_url ? (
                       <img
                         src={featured.cover_image_url}
+                        alt={featured.title}
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                    ) : introImage ? (
+                      <img
+                        src={introImage}
                         alt={featured.title}
                         className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                       />
