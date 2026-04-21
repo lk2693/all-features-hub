@@ -308,27 +308,32 @@ export default function UeberUns({ previewData }: { previewData?: UeberUnsPrevie
               <FileText className="h-6 w-6 text-secondary-foreground" />
             </div>
             <h2 className="font-display text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
-              Satzung & Geschäftsordnung
+              {satzung.title}
             </h2>
             <p className="mt-4 text-muted-foreground leading-relaxed">
-              Die Satzung und Geschäftsordnung des Kulturrat Braunschweig e.V. regeln
-              unsere Arbeitsweise und Entscheidungsprozesse.
+              {satzung.content}
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center mt-8">
-              <a
-                href="#"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-foreground text-background px-7 py-3.5 text-sm font-semibold hover:bg-foreground/90 transition-colors"
-              >
-                <Download className="h-4 w-4" />
-                Satzung (PDF)
-              </a>
-              <a
-                href="#"
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-border px-7 py-3.5 text-sm font-semibold text-foreground hover:bg-muted transition-colors"
-              >
-                <Download className="h-4 w-4" />
-                Geschäftsordnung (PDF)
-              </a>
+              {documentItems.map((doc, i) => {
+                const Icon = getIcon(doc.icon ?? "Download");
+                const isPrimary = i === 0;
+                return (
+                  <a
+                    key={doc.id}
+                    href={doc.file_url || "#"}
+                    target={doc.file_url && doc.file_url !== "#" ? "_blank" : undefined}
+                    rel="noopener noreferrer"
+                    className={
+                      isPrimary
+                        ? "inline-flex items-center justify-center gap-2 rounded-full bg-foreground text-background px-7 py-3.5 text-sm font-semibold hover:bg-foreground/90 transition-colors"
+                        : "inline-flex items-center justify-center gap-2 rounded-full border border-border px-7 py-3.5 text-sm font-semibold text-foreground hover:bg-muted transition-colors"
+                    }
+                  >
+                    <Icon className="h-4 w-4" />
+                    {doc.title}
+                  </a>
+                );
+              })}
             </div>
           </motion.div>
         </div>
