@@ -7,7 +7,7 @@ import calendarImage from "@/assets/calendar-preview.jpg";
 import { useCMSContent } from "@/hooks/useCMSContent";
 
 interface PreviewData {
-  intro?: { title?: string | null; subtitle?: string | null };
+  intro?: { title?: string | null; subtitle?: string | null; image_url?: string | null };
 }
 
 const events = [
@@ -61,6 +61,7 @@ export default function CalendarPreview({ previewData }: { previewData?: Preview
   const { content: intro } = useCMSContent("calendar_intro");
   const introTitleRaw = previewData?.intro?.title ?? intro.title ?? "Nächste Termine";
   const introSubtitle = previewData?.intro?.subtitle ?? intro.subtitle ?? "Sitzungen, Veranstaltungen und Förderfristen";
+  const introImage = previewData?.intro?.image_url ?? intro.image_url ?? calendarImage;
   const words = introTitleRaw.split(" ");
   const last = words.pop() ?? "";
   const head = words.join(" ");
@@ -103,7 +104,7 @@ export default function CalendarPreview({ previewData }: { previewData?: Preview
           >
             <div className="relative h-full rounded-3xl overflow-hidden min-h-[400px]">
               <img
-                src={calendarImage}
+                src={introImage}
                 alt="Kulturkalender"
                 className="absolute inset-0 w-full h-full object-cover"
               />
