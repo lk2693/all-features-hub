@@ -149,10 +149,12 @@ export function useHomeEditorState() {
     const { data: existing } = await supabase
       .from("cms_content").select("id").eq("block_key", block_key).maybeSingle();
     if (existing) {
-      const { error } = await supabase.from("cms_content").update(body).eq("block_key", block_key);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await supabase.from("cms_content").update(body as any).eq("block_key", block_key);
       if (error) throw error;
     } else {
-      const { error } = await supabase.from("cms_content").insert(body);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await supabase.from("cms_content").insert(body as any);
       if (error) throw error;
     }
   }
