@@ -158,21 +158,23 @@ export default function UeberUns({ previewData }: { previewData?: UeberUnsPrevie
               transition={{ duration: 0.7 }}
             >
               <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase bg-primary/10 text-primary mb-5">
-                Mission
+                {mission.badge}
               </span>
               <h2 className="font-display text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
-                {missionContent.title}
+                {mission.title}
               </h2>
               <p className="mt-6 text-muted-foreground leading-relaxed text-lg">
-                {missionContent.content}
+                {mission.content}
               </p>
-              <Link
-                to="/mitmachen"
-                className="group inline-flex items-center gap-2 mt-8 text-sm font-semibold text-primary hover:text-primary/80 transition-colors"
-              >
-                Mitglied werden
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Link>
+              {mission.cta_text && (
+                <Link
+                  to={mission.cta_link || "/mitmachen"}
+                  className="group inline-flex items-center gap-2 mt-8 text-sm font-semibold text-primary hover:text-primary/80 transition-colors"
+                >
+                  {mission.cta_text}
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </Link>
+              )}
             </motion.div>
 
             {/* Leitbild grid */}
@@ -183,26 +185,29 @@ export default function UeberUns({ previewData }: { previewData?: UeberUnsPrevie
               transition={{ duration: 0.7, delay: 0.15 }}
               className="grid grid-cols-1 sm:grid-cols-2 gap-5"
             >
-              {leitbildItems.map((item, i) => (
-                <motion.div
-                  key={item.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: 0.1 + i * 0.08 }}
-                  className="p-6 rounded-2xl border border-border/50 bg-card hover:border-primary/30 hover:shadow-glow transition-all duration-300"
-                >
-                  <div className="p-2.5 rounded-xl bg-primary/10 w-fit mb-4">
-                    <item.icon className="h-5 w-5 text-primary" />
-                  </div>
-                  <h3 className="font-display text-sm font-bold text-foreground mb-1.5">
-                    {item.title}
-                  </h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">
-                    {item.text}
-                  </p>
-                </motion.div>
-              ))}
+              {valueItems.map((item, i) => {
+                const Icon = getIcon(item.icon ?? "Sparkles");
+                return (
+                  <motion.div
+                    key={item.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: 0.1 + i * 0.08 }}
+                    className="p-6 rounded-2xl border border-border/50 bg-card hover:border-primary/30 hover:shadow-glow transition-all duration-300"
+                  >
+                    <div className="p-2.5 rounded-xl bg-primary/10 w-fit mb-4">
+                      <Icon className="h-5 w-5 text-primary" />
+                    </div>
+                    <h3 className="font-display text-sm font-bold text-foreground mb-1.5">
+                      {item.title}
+                    </h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                      {item.description}
+                    </p>
+                  </motion.div>
+                );
+              })}
             </motion.div>
           </div>
         </div>
