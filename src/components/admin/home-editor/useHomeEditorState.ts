@@ -8,7 +8,7 @@ import type { FeatureItem } from "@/components/home/FeaturesSection";
 import type { WorkingGroupItem } from "@/components/home/WorkingGroupsSection";
 import type { BenefitItem } from "@/components/home/MembershipSection";
 
-const emptyIntro: IntroData = { title: "", subtitle: "", cta_text: "", cta_link: "" };
+const emptyIntro: IntroData = { title: "", subtitle: "", cta_text: "", cta_link: "", image_url: "" };
 
 const initial: HomeEditorData = {
   hero: { title: "", subtitle: "", media: [] },
@@ -80,6 +80,7 @@ export function useHomeEditorState() {
           subtitle: row.subtitle ?? "",
           cta_text: row.cta_text ?? asString(meta.cta_text) ?? "",
           cta_link: row.cta_link ?? asString(meta.cta_link) ?? "",
+          image_url: row.image_url ?? "",
         };
       });
 
@@ -204,6 +205,7 @@ export function useHomeEditorState() {
         await upsertCms(k, {
           title: v.title, subtitle: v.subtitle,
           cta_text: v.cta_text || null, cta_link: v.cta_link || null,
+          image_url: v.image_url || null,
         });
       }
       await upsertCms("membership", {
