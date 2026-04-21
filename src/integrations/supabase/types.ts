@@ -266,6 +266,62 @@ export type Database = {
         }
         Relationships: []
       }
+      resource_requests: {
+        Row: {
+          created_at: string
+          desired_period: string | null
+          id: string
+          message: string
+          provider_response: string | null
+          requester_email: string
+          requester_id: string
+          requester_name: string
+          requester_phone: string | null
+          resource_id: string
+          responded_at: string | null
+          status: Database["public"]["Enums"]["request_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          desired_period?: string | null
+          id?: string
+          message: string
+          provider_response?: string | null
+          requester_email: string
+          requester_id: string
+          requester_name: string
+          requester_phone?: string | null
+          resource_id: string
+          responded_at?: string | null
+          status?: Database["public"]["Enums"]["request_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          desired_period?: string | null
+          id?: string
+          message?: string
+          provider_response?: string | null
+          requester_email?: string
+          requester_id?: string
+          requester_name?: string
+          requester_phone?: string | null
+          resource_id?: string
+          responded_at?: string | null
+          status?: Database["public"]["Enums"]["request_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resource_requests_resource_id_fkey"
+            columns: ["resource_id"]
+            isOneToOne: false
+            referencedRelation: "resources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       resources: {
         Row: {
           category: string
@@ -395,6 +451,12 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      request_status:
+        | "pending"
+        | "accepted"
+        | "declined"
+        | "completed"
+        | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -523,6 +585,13 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
+      request_status: [
+        "pending",
+        "accepted",
+        "declined",
+        "completed",
+        "cancelled",
+      ],
     },
   },
 } as const
