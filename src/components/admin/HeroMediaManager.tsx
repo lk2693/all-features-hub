@@ -209,6 +209,9 @@ export function HeroMediaManager({ media, onChange }: HeroMediaManagerProps) {
                   id={itemIds[index]}
                   item={item}
                   onRemove={() => handleRemove(index)}
+                  onUpdate={(patch) =>
+                    onChange(media.map((m, i) => (i === index ? { ...m, ...patch } : m)))
+                  }
                 />
               ))}
             </div>
