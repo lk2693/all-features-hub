@@ -1,5 +1,5 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Folder, FileText, Settings, BookOpen, Calendar, BarChart3, Users, Inbox, Home, Info } from "lucide-react";
+import { Folder, FileText, Settings, BookOpen, Calendar, BarChart3, Users, Inbox, Home, Info, UserPlus } from "lucide-react";
 
 interface AdminTabsProps {
   activeTab: string;
@@ -10,7 +10,7 @@ interface AdminTabsProps {
 export function AdminTabs({ activeTab, onTabChange, children }: AdminTabsProps) {
   return (
     <Tabs value={activeTab} onValueChange={onTabChange} className="w-full">
-      <TabsList className="grid w-full grid-cols-10 mb-8">
+      <TabsList className="grid w-full grid-cols-11 mb-8">
         <TabsTrigger value="statistics" className="flex items-center gap-2">
           <BarChart3 className="h-4 w-4" />
           <span className="hidden sm:inline">Statistik</span>
@@ -46,6 +46,10 @@ export function AdminTabs({ activeTab, onTabChange, children }: AdminTabsProps) 
         <TabsTrigger value="about" className="flex items-center gap-2">
           <Info className="h-4 w-4" />
           <span className="hidden sm:inline">Über uns</span>
+        </TabsTrigger>
+        <TabsTrigger value="mitmachen" className="flex items-center gap-2">
+          <UserPlus className="h-4 w-4" />
+          <span className="hidden sm:inline">Mitmachen</span>
         </TabsTrigger>
         <TabsTrigger value="cms" className="flex items-center gap-2">
           <Settings className="h-4 w-4" />
