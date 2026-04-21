@@ -4,6 +4,11 @@ import { ArrowRight, Clock, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import calendarImage from "@/assets/calendar-preview.jpg";
+import { useCMSContent } from "@/hooks/useCMSContent";
+
+interface PreviewData {
+  intro?: { title?: string | null; subtitle?: string | null };
+}
 
 const events = [
   {
@@ -52,7 +57,13 @@ const events = [
   },
 ];
 
-export default function CalendarPreview() {
+export default function CalendarPreview({ previewData }: { previewData?: PreviewData } = {}) {
+  const { content: intro } = useCMSContent("calendar_intro");
+  const introTitleRaw = previewData?.intro?.title ?? intro.title ?? "Nächste Termine";
+  const introSubtitle = previewData?.intro?.subtitle ?? intro.subtitle ?? "Sitzungen, Veranstaltungen und Förderfristen";
+  const words = introTitleRaw.split(" ");
+  const last = words.pop() ?? "";
+  const head = words.join(" ");
   return (
     <section className="py-24 lg:py-36 bg-background">
       <div className="container">
@@ -65,11 +76,11 @@ export default function CalendarPreview() {
         >
           <div>
             <h2 className="font-display text-5xl sm:text-6xl lg:text-7xl font-bold text-foreground tracking-tight leading-[1.05]">
-              Nächste{" "}
-              <span className="text-gradient">Termine</span>
+              {head}{head && " "}
+              <span className="text-gradient">{last}</span>
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">
-              Sitzungen, Veranstaltungen und Förderfristen
+              {introSubtitle}
             </p>
           </div>
           <Link

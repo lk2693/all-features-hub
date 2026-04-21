@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, ArrowUpRight, Calendar } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
+import { useCMSContent } from "@/hooks/useCMSContent";
 
 type NewsCategory = "news" | "foerderung" | "blog";
 
@@ -61,9 +62,14 @@ function formatDate(d: string) {
   return new Date(d).toLocaleDateString("de-DE", { day: "numeric", month: "short", year: "numeric" });
 }
 
-export default function NewsSection() {
+interface PreviewData {
+  intro?: { title?: string | null; subtitle?: string | null };
+}
+
+export default function NewsSection({ previewData }: { previewData?: PreviewData } = {}) {
   const [news, setNews] = useState<NewsPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { content: intro } = useCMSContent("news_intro");
 
   useEffect(() => {
     async function fetchNews() {
@@ -88,6 +94,9 @@ export default function NewsSection() {
   const featured = news[0];
   const rest = news.slice(1);
 
+  const introTitle = previewData?.intro?.title ?? intro.title ?? "Aktuelles";
+  const introSubtitle = previewData?.intro?.subtitle ?? intro.subtitle ?? "Neuigkeiten aus der Kulturszene";
+
   return (
     <section className="py-24 lg:py-36 bg-muted/30">
       <div className="container">
@@ -100,10 +109,10 @@ export default function NewsSection() {
         >
           <div>
             <h2 className="font-display text-5xl sm:text-6xl lg:text-7xl font-bold text-foreground tracking-tight">
-              Aktuelles
+              {introTitle}
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">
-              Neuigkeiten aus der Kulturszene
+              {introSubtitle}
             </p>
           </div>
           <Link

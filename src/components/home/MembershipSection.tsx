@@ -1,17 +1,34 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useRef } from "react";
-import { Check, ArrowRight, Users, Vote, Package, BookOpen, Handshake, MessageSquare } from "lucide-react";
+import { Check, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import membershipImage from "@/assets/membership-hero.jpg";
+import { useCMSContent } from "@/hooks/useCMSContent";
+import { getIcon } from "@/lib/iconMap";
 
-const benefits = [
-  { icon: Vote, title: "Stimmrecht", desc: "In Vollversammlungen & Abstimmungen" },
-  { icon: Package, title: "Ressourcenpool", desc: "Technik, Räume & Know-how nutzen" },
-  { icon: BookOpen, title: "Förderberatung", desc: "Infos & Workshops zu Anträgen" },
-  { icon: Handshake, title: "Netzwerk", desc: "Kontakte in der Kulturszene knüpfen" },
-  { icon: MessageSquare, title: "Newsletter", desc: "Exklusive Infos & Updates" },
-  { icon: Users, title: "Arbeitsgruppen", desc: "In AGs aktiv mitgestalten" },
+export interface BenefitItem {
+  icon?: string | null;
+  title: string;
+  desc?: string | null;
+}
+
+interface PreviewData {
+  title?: string | null;
+  subtitle?: string | null;
+  content?: string | null; // quote
+  image_url?: string | null;
+  benefits?: BenefitItem[];
+  quote_author?: string | null;
+}
+
+const fallbackBenefits: BenefitItem[] = [
+  { icon: "Vote",          title: "Stimmrecht",     desc: "In Vollversammlungen & Abstimmungen" },
+  { icon: "Package",       title: "Ressourcenpool", desc: "Technik, Räume & Know-how nutzen" },
+  { icon: "BookOpen",      title: "Förderberatung", desc: "Infos & Workshops zu Anträgen" },
+  { icon: "Handshake",     title: "Netzwerk",       desc: "Kontakte in der Kulturszene knüpfen" },
+  { icon: "MessageSquare", title: "Newsletter",     desc: "Exklusive Infos & Updates" },
+  { icon: "Users",         title: "Arbeitsgruppen", desc: "In AGs aktiv mitgestalten" },
 ];
 
 const memberTypes = [
@@ -31,7 +48,20 @@ const memberTypes = [
   },
 ];
 
-export default function MembershipSection() {
+export default function MembershipSection({ previewData }: { previewData?: PreviewData } = {}) {
+  const { content } = useCMSContent("membership");
+  const meta = (content.metadata ?? {}) as { benefits?: BenefitItem[]; quote_author?: string };
+  const titleRaw = previewData?.title ?? content.title ?? "Mitglied werden";
+  const subtitle = previewData?.subtitle ?? content.subtitle ?? "Werde Teil des Kulturrats und gestalte die Kulturpolitik in Braunschweig aktiv mit.";
+  const quote = previewData?.content ?? content.content ?? "„Gemeinsam sind wir die Stimme der Kultur in Braunschweig.\"";
+  const quoteAuthor = previewData?.quote_author ?? meta.quote_author ?? "— Kulturrat Braunschweig e.V.";
+  const image = previewData?.image_url ?? content.image_url ?? membershipImage;
+  const benefits = (previewData?.benefits ?? meta.benefits ?? fallbackBenefits) as BenefitItem[];
+
+  const words = titleRaw.split(" ");
+  const last = words.pop() ?? "";
+  const head = words.join(" ");
+
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -51,17 +81,19 @@ export default function MembershipSection() {
           className="mb-16"
         >
           <h2 className="font-display text-5xl sm:text-6xl lg:text-7xl font-bold text-foreground tracking-tight leading-[1.05]">
-            Mitglied{" "}
-            <span className="text-gradient">werden</span>
+            {head}{head && " "}
+            <span className="text-gradient">{last}</span>
           </h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl">
-            Werde Teil des Kulturrats und gestalte die Kulturpolitik in Braunschweig aktiv mit.
+            {subtitle}
           </p>
         </motion.div>
 
         {/* Benefits Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-20">
-          {benefits.map((benefit, index) => (
+          {benefits.map((benefit, index) => {
+            const Icon = getIcon(benefit.icon);
+            return (
             <motion.div
               key={benefit.title}
               initial={{ opacity: 0, y: 25 }}
@@ -71,12 +103,12 @@ export default function MembershipSection() {
               className="group p-5 rounded-2xl border border-border/50 bg-card hover:border-primary/30 hover:shadow-glow transition-all duration-300"
             >
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
-                <benefit.icon className="h-5 w-5 text-primary" />
+                <Icon className="h-5 w-5 text-primary" />
               </div>
               <h3 className="font-display font-semibold text-foreground mb-1">{benefit.title}</h3>
-              <p className="text-sm text-muted-foreground">{benefit.desc}</p>
+              {benefit.desc && <p className="text-sm text-muted-foreground">{benefit.desc}</p>}
             </motion.div>
-          ))}
+          );})}
         </div>
 
         {/* Membership Types */}
@@ -138,7 +170,7 @@ export default function MembershipSection() {
           className="relative rounded-3xl overflow-hidden"
         >
           <motion.img
-            src={membershipImage}
+            src={image}
             alt="Kulturschaffende arbeiten zusammen"
             className="w-full h-[400px] lg:h-[500px] object-cover"
             style={{ scale: imgScale }}
@@ -147,10 +179,10 @@ export default function MembershipSection() {
           <div className="absolute bottom-0 left-0 right-0 p-8 sm:p-12">
             <blockquote className="max-w-2xl">
               <p className="font-display text-xl sm:text-2xl lg:text-3xl font-bold text-background leading-snug italic">
-                „Gemeinsam sind wir die Stimme der Kultur in Braunschweig."
+                {quote}
               </p>
               <footer className="mt-4 text-sm text-background/60">
-                — Kulturrat Braunschweig e.V.
+                {quoteAuthor}
               </footer>
             </blockquote>
           </div>

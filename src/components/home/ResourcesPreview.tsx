@@ -4,6 +4,11 @@ import { useRef } from "react";
 import { ArrowRight, ArrowUpRight, Monitor, Home, Lightbulb, Music, Camera, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ressourcenImage from "@/assets/ressourcen-preview.jpg";
+import { useCMSContent } from "@/hooks/useCMSContent";
+
+interface PreviewData {
+  intro?: { title?: string | null; subtitle?: string | null };
+}
 
 const resourceCategories = [
   { title: "Technik", description: "Beamer, Licht, Sound", icon: Monitor, count: 24, style: "bg-primary/10 text-primary" },
@@ -14,13 +19,19 @@ const resourceCategories = [
   { title: "Werkzeuge", description: "Handwerk & Aufbau", icon: Wrench, count: 8, style: "bg-secondary text-secondary-foreground" },
 ];
 
-export default function ResourcesPreview() {
+export default function ResourcesPreview({ previewData }: { previewData?: PreviewData } = {}) {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start end", "end start"],
   });
   const imgScale = useTransform(scrollYProgress, [0, 1], [1.1, 1]);
+  const { content: intro } = useCMSContent("resources_intro");
+  const introTitleRaw = previewData?.intro?.title ?? intro.title ?? "Ressourcenpool";
+  const introSubtitle = previewData?.intro?.subtitle ?? intro.subtitle ?? "Finde und teile Ressourcen mit anderen Kulturschaffenden.";
+  const words = introTitleRaw.split(" ");
+  const last = words.pop() ?? "";
+  const head = words.join(" ");
 
   return (
     <section ref={ref} className="py-24 lg:py-36 bg-gradient-section">
@@ -34,11 +45,11 @@ export default function ResourcesPreview() {
         >
           <div>
             <h2 className="font-display text-5xl sm:text-6xl lg:text-7xl font-bold text-foreground tracking-tight leading-[1.05]">
-              Ressourcen
-              <span className="text-gradient">pool</span>
+              {head}{head && " "}
+              <span className="text-gradient">{last}</span>
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">
-              Finde und teile Ressourcen mit anderen Kulturschaffenden.
+              {introSubtitle}
             </p>
           </div>
           <div className="flex items-center gap-3 shrink-0">

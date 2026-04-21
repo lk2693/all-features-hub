@@ -1,14 +1,10 @@
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import {
-  Newspaper,
-  CalendarDays,
-  Package,
-  Coins,
-  Users,
-  MessageSquare,
-  ArrowUpRight,
-} from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useCMSContent } from "@/hooks/useCMSContent";
+import { getIcon } from "@/lib/iconMap";
 
 import featureNews from "@/assets/feature-news.jpg";
 import featureKalender from "@/assets/feature-kalender.jpg";
@@ -17,52 +13,63 @@ import featureFoerderung from "@/assets/feature-foerderung.jpg";
 import featureCommunity from "@/assets/feature-community.jpg";
 import featureKontakt from "@/assets/feature-kontakt.jpg";
 
-const features = [
-  {
-    title: "News & Blog",
-    subtitle: "Aktuelles aus der Kulturszene",
-    icon: Newspaper,
-    href: "/news",
-    image: featureNews,
-  },
-  {
-    title: "Kalender",
-    subtitle: "Events & Termine",
-    icon: CalendarDays,
-    href: "/kalender",
-    image: featureKalender,
-  },
-  {
-    title: "Ressourcenpool",
-    subtitle: "Teilen & Finden",
-    icon: Package,
-    href: "/ressourcen",
-    image: featureRessourcen,
-  },
-  {
-    title: "Förderinfos",
-    subtitle: "Stipendien & Programme",
-    icon: Coins,
-    href: "/foerderung",
-    image: featureFoerderung,
-  },
-  {
-    title: "Community",
-    subtitle: "Vernetzen & Austauschen",
-    icon: Users,
-    href: "/mitmachen",
-    image: featureCommunity,
-  },
-  {
-    title: "Kontakt",
-    subtitle: "Direkter Draht",
-    icon: MessageSquare,
-    href: "/kontakt",
-    image: featureKontakt,
-  },
+const fallbackImages = [featureNews, featureKalender, featureRessourcen, featureFoerderung, featureCommunity, featureKontakt];
+
+export interface FeatureItem {
+  id: string;
+  title: string;
+  subtitle?: string | null;
+  icon?: string | null;
+  image_url?: string | null;
+  link: string;
+}
+
+interface PreviewData {
+  intro?: { title?: string | null; subtitle?: string | null; cta_text?: string | null; cta_link?: string | null };
+  items?: FeatureItem[];
+}
+
+const fallbackFeatures: FeatureItem[] = [
+  { id: "1", title: "News & Blog",    subtitle: "Aktuelles aus der Kulturszene", icon: "Newspaper",     link: "/news" },
+  { id: "2", title: "Kalender",       subtitle: "Events & Termine",              icon: "CalendarDays",  link: "/kalender" },
+  { id: "3", title: "Ressourcenpool", subtitle: "Teilen & Finden",               icon: "Package",       link: "/ressourcen" },
+  { id: "4", title: "Förderinfos",    subtitle: "Stipendien & Programme",        icon: "Coins",         link: "/foerderung" },
+  { id: "5", title: "Community",      subtitle: "Vernetzen & Austauschen",       icon: "Users",         link: "/mitmachen" },
+  { id: "6", title: "Kontakt",        subtitle: "Direkter Draht",                icon: "MessageSquare", link: "/kontakt" },
 ];
 
-export default function FeaturesSection() {
+export default function FeaturesSection({ previewData }: { previewData?: PreviewData } = {}) {
+  const { content: intro } = useCMSContent("features_intro");
+  const [features, setFeatures] = useState<FeatureItem[]>(fallbackFeatures);
+
+  useEffect(() => {
+    if (previewData?.items) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("home_features")
+        .select("id, title, subtitle, icon, image_url, link, sort_order")
+        .eq("is_active", true)
+        .order("sort_order");
+      if (!cancelled && data && data.length > 0) {
+        setFeatures(data as FeatureItem[]);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [previewData?.items]);
+
+  const items = previewData?.items ?? features;
+  const introTitle = previewData?.intro?.title ?? intro.title ?? "Was wir bieten";
+  const introSubtitle = previewData?.intro?.subtitle ?? intro.subtitle;
+  const meta = (intro.metadata ?? {}) as Record<string, string>;
+  const ctaText = previewData?.intro?.cta_text ?? meta.cta_text ?? "Alle Angebote";
+  const ctaLink = previewData?.intro?.cta_link ?? meta.cta_link ?? "/mitmachen";
+
+  // Split last word for gradient
+  const words = introTitle.split(" ");
+  const last = words.pop() ?? "";
+  const head = words.join(" ");
+
   return (
     <section className="py-24 lg:py-36 bg-background">
       <div className="container">
@@ -73,17 +80,22 @@ export default function FeaturesSection() {
           transition={{ duration: 0.8, ease: [0.25, 0.1, 0, 1] }}
           className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-14"
         >
-          <h2 className="font-display text-5xl sm:text-6xl lg:text-7xl font-bold text-foreground tracking-tight leading-[1.05]">
-            Was wir{" "}
-            <span className="text-gradient">bieten</span>
-          </h2>
+          <div>
+            <h2 className="font-display text-5xl sm:text-6xl lg:text-7xl font-bold text-foreground tracking-tight leading-[1.05]">
+              {head}{head && " "}
+              <span className="text-gradient">{last}</span>
+            </h2>
+            {introSubtitle && (
+              <p className="mt-4 text-lg text-muted-foreground max-w-xl">{introSubtitle}</p>
+            )}
+          </div>
 
           <Link
-            to="/mitmachen"
+            to={ctaLink}
             className="inline-flex items-center gap-3 self-start sm:self-auto"
           >
             <span className="px-6 py-3 rounded-full bg-foreground text-background font-medium text-sm hover:bg-foreground/90 transition-colors">
-              Alle Angebote
+              {ctaText}
             </span>
             <span className="p-3 rounded-full bg-foreground text-background hover:bg-foreground/90 transition-colors">
               <ArrowUpRight className="h-4 w-4" />
@@ -93,8 +105,13 @@ export default function FeaturesSection() {
 
         {/* Grid layout */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {features.map((feature, index) => (
-            <FeatureCard key={feature.title} feature={feature} index={index} />
+          {items.map((feature, index) => (
+            <FeatureCard
+              key={feature.id ?? feature.title}
+              feature={feature}
+              index={index}
+              fallbackImage={fallbackImages[index % fallbackImages.length]}
+            />
           ))}
         </div>
       </div>
@@ -102,7 +119,8 @@ export default function FeaturesSection() {
   );
 }
 
-function FeatureCard({ feature, index }: { feature: typeof features[0]; index: number }) {
+function FeatureCard({ feature, index, fallbackImage }: { feature: FeatureItem; index: number; fallbackImage: string }) {
+  const image = feature.image_url || fallbackImage;
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -111,11 +129,11 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
       transition={{ duration: 0.5, delay: index * 0.07, ease: [0.25, 0.1, 0, 1] }}
     >
       <Link
-        to={feature.href}
+        to={feature.link}
         className="group relative block aspect-[3/4] rounded-3xl overflow-hidden"
       >
         <img
-          src={feature.image}
+          src={image}
           alt={feature.title}
           className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
           loading="lazy"
@@ -130,9 +148,9 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
           <h3 className="font-display text-2xl font-bold text-background mb-1">
             {feature.title}
           </h3>
-          <p className="text-background/70 text-sm">
-            {feature.subtitle}
-          </p>
+          {feature.subtitle && (
+            <p className="text-background/70 text-sm">{feature.subtitle}</p>
+          )}
         </div>
       </Link>
     </motion.div>
