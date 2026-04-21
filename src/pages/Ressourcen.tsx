@@ -2,10 +2,11 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Layout from "@/components/layout/Layout";
 import { Link } from "react-router-dom";
-import { Search, Monitor, Home, Lightbulb, Music, Camera, Wrench, MapPin, User, ArrowRight, Plus, Loader2, Mail } from "lucide-react";
+import { Search, Monitor, Home, Lightbulb, Music, Camera, Wrench, MapPin, User, ArrowRight, Plus, Loader2, Send } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { ResourceRequestDialog } from "@/components/resources/ResourceRequestDialog";
 import ressourcenHero from "@/assets/ressourcen-hero.jpg";
 
 const categories = [
@@ -53,6 +54,8 @@ export default function Ressourcen() {
   const [isFocused, setIsFocused] = useState(false);
   const [resources, setResources] = useState<Resource[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [requestOpen, setRequestOpen] = useState(false);
+  const [activeResource, setActiveResource] = useState<Resource | null>(null);
 
   useEffect(() => {
     async function fetchResources() {
