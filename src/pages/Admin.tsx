@@ -7,6 +7,7 @@ import { AdminTabs, TabsContent } from "@/components/admin/AdminTabs";
 import { NewsManager } from "@/components/admin/NewsManager";
 import { CMSEditor } from "@/components/admin/CMSEditor";
 import { HomeEditor } from "@/components/admin/home-editor/HomeEditor";
+import { AboutEditor } from "@/components/admin/about-editor/AboutEditor";
 import { ResourcesManager } from "@/components/admin/ResourcesManager";
 import { RequestsManager } from "@/components/admin/RequestsManager";
 import { BestPracticesManager } from "@/components/admin/BestPracticesManager";
@@ -99,6 +100,9 @@ export default function Admin() {
           </TabsContent>
           <TabsContent value="home">
             <HomeEditor />
+          </TabsContent>
+          <TabsContent value="about">
+            <AboutEditor />
           </TabsContent>
           <TabsContent value="cms">
             <CMSEditor />
