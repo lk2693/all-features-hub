@@ -68,7 +68,7 @@ export default function Header() {
           "fixed top-0 left-0 right-0 z-50 transition-all duration-500",
           scrolled || !isHome ?
           "bg-background/80 backdrop-blur-xl border-b border-border/50 shadow-sm" :
-          "bg-gradient-to-b from-foreground/40 to-transparent backdrop-blur-[2px]"
+          "bg-gradient-to-b from-foreground/70 via-foreground/40 to-transparent backdrop-blur-[3px]"
         )}>
         
         <nav className="container flex h-16 items-center justify-between lg:h-20">
@@ -231,7 +231,7 @@ export default function Header() {
                 "p-2.5 rounded-lg transition-colors",
                 scrolled || !isHome ?
                 "text-muted-foreground hover:bg-muted" :
-                "text-white/80 hover:bg-white/10"
+                "text-white hover:bg-white/10 drop-shadow-md"
               )}>
               
               <Search className="h-5 w-5" />
@@ -242,7 +242,7 @@ export default function Header() {
                 "p-2.5 rounded-lg transition-colors",
                 scrolled || !isHome ?
                 "text-foreground hover:bg-muted" :
-                "text-white hover:bg-white/10"
+                "text-white hover:bg-white/10 drop-shadow-md"
               )}>
               
               <AnimatePresence mode="wait" initial={false}>
