@@ -335,17 +335,19 @@ export default function Mitmachen({ previewData }: { previewData?: MitmachenPrev
             className="mb-14"
           >
             <h2 className="font-display text-3xl sm:text-4xl font-bold text-foreground">
-              Arbeitsgruppen
+              {agsIntro.title}
             </h2>
             <p className="mt-3 text-lg text-muted-foreground max-w-2xl">
-              In unseren AGs kannst du aktiv an der Arbeit des Kulturrats mitwirken.
+              {agsIntro.subtitle}
             </p>
           </motion.div>
 
           <div className="grid sm:grid-cols-2 gap-5">
-            {ags.map((ag, index) => (
+            {ags.map((ag, index) => {
+              const AgIcon = getIcon(ag.icon ?? "Users");
+              return (
               <motion.div
-                key={ag.name}
+                key={ag.id}
                 initial={{ opacity: 0, y: 25 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -353,20 +355,22 @@ export default function Mitmachen({ previewData }: { previewData?: MitmachenPrev
               >
                 <div className="group h-full rounded-2xl overflow-hidden border border-border/50 bg-card hover:border-primary/30 hover:shadow-glow transition-all duration-300">
                   {/* Image */}
+                  {ag.image_url && (
                   <div className="aspect-[16/9] overflow-hidden">
                     <img
-                      src={ag.image}
+                      src={ag.image_url}
                       alt={ag.name}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                       loading="lazy"
                     />
                   </div>
+                  )}
 
                   {/* Content */}
                   <div className="p-6">
                     <div className="flex items-center gap-3 mb-3">
                       <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <ag.icon className="h-4 w-4 text-primary" />
+                        <AgIcon className="h-4 w-4 text-primary" />
                       </div>
                       <h3 className="font-display text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
                         {ag.name}
@@ -374,19 +378,24 @@ export default function Mitmachen({ previewData }: { previewData?: MitmachenPrev
                     </div>
                     <p className="text-sm text-muted-foreground mb-4">{ag.description}</p>
                     <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                      {typeof ag.member_count === "number" && (
                       <span className="flex items-center gap-1.5">
                         <Users className="h-3.5 w-3.5 text-primary" />
-                        {ag.members} Mitglieder
+                        {ag.member_count} Mitglieder
                       </span>
+                      )}
+                      {ag.meeting_info && (
                       <span className="flex items-center gap-1.5">
                         <Calendar className="h-3.5 w-3.5 text-primary" />
-                        {ag.nextMeeting}
+                        {ag.meeting_info}
                       </span>
+                      )}
                     </div>
                   </div>
                 </div>
               </motion.div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -401,26 +410,29 @@ export default function Mitmachen({ previewData }: { previewData?: MitmachenPrev
             transition={{ duration: 0.6 }}
           >
             <h2 className="font-display text-3xl sm:text-4xl font-bold text-background mb-4">
-              Fragen? Wir helfen gerne!
+              {cta.title}
             </h2>
             <p className="text-background/60 mb-8">
-              Du hast Fragen zur Mitgliedschaft oder möchtest mehr über unsere Arbeit erfahren?
-              Kontaktiere uns – wir freuen uns auf dich!
+              {cta.content}
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              {cta.cta_text && (
               <Link
-                to="/kontakt"
+                to={cta.cta_link || "/kontakt"}
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
               >
                 <Mail className="h-4 w-4" />
-                Kontakt aufnehmen
+                {cta.cta_text}
               </Link>
+              )}
+              {cta.secondary_cta_text && (
               <a
-                href="mailto:info@kulturrat-braunschweig.de"
+                href={cta.secondary_cta_link || "#"}
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold border border-background/20 text-background hover:bg-background/10 transition-colors"
               >
-                info@kulturrat-braunschweig.de
+                {cta.secondary_cta_text}
               </a>
+              )}
             </div>
           </motion.div>
         </div>
