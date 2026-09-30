@@ -226,7 +226,6 @@ export default function RessourcenEintragen() {
       provider_phone: formData.providerPhone || null,
       location: formData.location,
       conditions: formData.conditions || null,
-      image_url: imageUrl || null,
       submitted_by: user.id,
       is_approved: isAdmin,
       is_available: true,

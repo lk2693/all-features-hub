@@ -321,7 +321,7 @@ export function CMSEditor() {
         if (cmsContent[blockKey]) {
           const { error } = await supabase
             .from("cms_content")
-            .update(updateData)
+            .update(updateData as never)
             .eq("block_key", blockKey);
 
           if (error) throw error;
